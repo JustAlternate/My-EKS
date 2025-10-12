@@ -37,3 +37,8 @@ variable "node_instance_types" {
   type        = list(string)
   default     = ["t4g.small"]
 }
+
+variable "ecr_repository_name" {
+  description = "The name of the ECR repository."
+  default     = "justalternate-ecr-repository"
+}

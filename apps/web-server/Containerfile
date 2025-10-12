@@ -1,0 +1,15 @@
+FROM golang:alpine AS builder
+
+WORKDIR /app
+
+COPY go.mod *.go ./
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o web-server
+
+FROM scratch AS runner
+
+COPY --from=builder /app/web-server ./web-server
+
+EXPOSE 8080
+
+CMD [ "/web-server" ]
