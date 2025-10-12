@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment 
+  labels:
+    app: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: 149536499628.dkr.ecr.eu-west-3.amazonaws.com/api:latest #TODO: fix this to not hardcode account id and region => CI/CD ? HELM ?
+        ports:
+        - containerPort: 3030
