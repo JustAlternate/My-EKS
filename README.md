@@ -9,7 +9,7 @@
 - [ ] 2 Apps deployable (one that expose a public web-server with a button to send a request to the second one that update the counter in the RDS)
 - [ ] RDS (postgresql that will store a counter)
 - [ ] Helm support for apps deployment
-- [ ] ECR (Managed Registry)
+- [x] ECR (Managed Registry)
 - [ ] CI (lint, format TF & lint, format, build, push Containerfile)
 - [ ] CD (Argo CD for deploying images and infrastructure)
 - [ ] Karpenter for automatic pods provisionning (replace Node group)
@@ -36,8 +36,8 @@ aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name justalternate-eks-
 
 Login to the ECR to manually push image to it
 ```
-ECR_URL="https://$(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
-aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login -u AWS --password-stdin $ECR_URL
+AWS_FULL_ECR_URL="https://$(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login -u AWS --password-stdin $AWS_FULL_ECR_URL
 ```
 
 ## Deploy some apps
@@ -68,7 +68,7 @@ TODO curl
 
 #### Create repositories if not exist
 
-Add your repository for each image you want to build and store
+Add your repository for each app you want to build and store
 ```
 nvim iac/storage/ecr.tf
 ```
@@ -76,17 +76,18 @@ nvim iac/storage/ecr.tf
 #### Build and Deploy
 
 ```
-ECR_URL=$(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+AWS_ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
+AWS_ECR_URL=$AWS_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 
 # Build them
 docker build ./apps/api/ -t api -f apps/api/Containerfile
 docker build ./apps/web-server/ -t web-server -f apps/web-server/Containerfile
 
 # Tag them
-docker tag api:latest $ECR_URL/api:latest
-docker tag web-server:latest $ECR_URL/web-server:latest
+docker tag api:latest $AWS_ECR_URL/api:latest
+docker tag web-server:latest $AWS_ECR_URL/web-server:latest
 
 # Push them
-docker push $ECR_URL/api:latest
-docker push $ECR_URL/web-server:latest
+docker push $AWS_ECR_URL/api:latest
+docker push $AWS_ECR_URL/web-server:latest
 ```
