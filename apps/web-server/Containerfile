@@ -6,7 +6,9 @@ COPY go.mod *.go ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o web-server
 
-FROM scratch AS runner
+# https://images.chainguard.dev/directory/image/static/versions 
+# ultra minimal image for running static binaries in production
+FROM cgr.dev/chainguard/static:latest AS runner
 
 COPY --from=builder /app/web-server ./web-server
 
