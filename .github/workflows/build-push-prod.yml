@@ -1,0 +1,38 @@
+name: 'build-push-prod'
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/*/**'
+jobs:
+  release-build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v5.1.0
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        docker build ./apps/api/ -t api -f apps/api/Containerfile
+        docker build ./apps/web-server/ -t web-server -f apps/web-server/Containerfile
+
+        docker tag api:latest $ECR_REGISTRY/api-dev:$BRANCH_NAME
+        docker tag web-server:latest $ECR_REGISTRY/web-server-dev:$BRANCH_NAME
+
+        docker push $ECR_REGISTRY/api-dev:$BRANCH_NAME
+        docker push $ECR_REGISTRY/web-server-dev:$BRANCH_NAME
