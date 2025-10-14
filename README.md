@@ -7,10 +7,13 @@
 - [x] Managed Node Group multi AZ (only using tg4.small and 2 dynamic AZ configured)
 - [x] ECR (Managed Registry)
 - [x] CloudWatch
+- [x] CI (lint, format iac code and tf plan and tf apply)
+- [ ] CI (lint, format, build, push Containerfile)
 - [ ] 2 Apps deployable (one that expose a public web-server and send a request to the second one that update the counter in a RDS)
+- [ ] add healthchecks to the apps (liveness & readiness)
 - [ ] RDS (postgresql that will store a counter)
-- [ ] CI (lint, format TF & lint, format, build, push Containerfile)
-- [ ] CD (Argo CD for deploying images and infrastructure)
+- [ ] CD (Argo CD for deploying images)
+- [ ] CD (Automatic rollback on liveness failure)
 - [ ] Devenv shell to setup dev environment
 - [ ] Helm support for apps deployment
 - [ ] Karpenter for automatic spot provisionning (replace Node group)
