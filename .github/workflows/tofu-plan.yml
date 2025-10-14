@@ -1,14 +1,18 @@
 name: 'Tofu Plan'
+
 on:
   pull_request:
+    paths:
+      - 'iac/**/*.tf'
 
 jobs:
-  tofu:
+  tofu-plan-and-comment:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
       id-token: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,28 +27,98 @@ jobs:
         uses: opentofu/setup-opentofu@v1
 
       - name: Tofu Init
+        id: init
         run: tofu -chdir=iac init
 
       - name: Tofu Format
+        id: fmt
         run: tofu -chdir=iac fmt -check
+        continue-on-error: true
+
+      - name: Tofu Validate
+        id: validate
+        run: tofu -chdir=iac validate
+        continue-on-error: true
 
       - name: Tofu Plan
-        run: tofu -chdir=iac plan -out=tfplan
+        id: plan
+        run: tofu -chdir=iac plan -no-color
+        continue-on-error: true
 
-      - name: Add Plan Comment
-        uses: actions/github-script@v6
+      # https://github.com/marketplace/actions/opentofu-setup-tofu
+      - uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "tofu\n${{ steps.plan.outputs.stdout }}"
+          FMT_OUTPUT: ${{ steps.fmt.outputs.stdout }}
+          VALIDATE_OUTPUT: ${{ steps.validate.outputs.stdout }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Plan Output
-            \`\`\`
-            ${process.env.PLAN_OUTPUT}
-            \`\`\`
-            `;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: output
-            })
+              issue_number: context.issue.number,
+            });
 
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' && comment.body.includes('OpenTofu Format and Style')
+            );
+
+            // Escape backticks in outputs to prevent breaking markdown
+            const escapeOutput = (text) => {
+              return text ? String(text).replace(/`/g, '\\`') : 'No output';
+            };
+
+            const fmtOutput = escapeOutput(process.env.FMT_OUTPUT);
+            const validateOutput = escapeOutput(process.env.VALIDATE_OUTPUT);
+            const planOutput = escapeOutput(process.env.PLAN);
+
+            const fmtOutcome = '${{ steps.fmt.outcome }}' === 'success' ? '✅' : '❌';
+            const initOutcome = '${{ steps.init.outcome }}' === 'success' ? '✅' : '❌';
+            const validateOutcome = '${{ steps.validate.outcome }}' === 'success' ? '✅' : '❌';
+            const planOutcome = '${{ steps.plan.outcome }}' === 'success' ? '✅' : '❌';
+
+            const output = `
+            #### OpenTofu Format and Style 🖌️ ${fmtOutcome}
+            #### OpenTofu Initialization ⚙️ ${initOutcome}
+            #### OpenTofu Validation 🤖 ${validateOutcome}
+            <details><summary>Validation Output</summary>
+
+            \`\`\`
+            ${validateOutput}
+            \`\`\`
+
+            </details>
+
+            #### OpenTofu Plan 📖 ${planOutcome}
+            <details><summary>Show Plan</summary>
+
+            \`\`\`
+            ${planOutput}
+            \`\`\`
+
+            </details>
+
+            _Pusher: @${{ github.actor }}, Action: ${{
+              github.event_name
+            }}, Working Directory: iac, Workflow: ${{
+              github.workflow
+            }}_
+            `;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output,
+              });
+            }

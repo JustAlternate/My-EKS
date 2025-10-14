@@ -1,0 +1,32 @@
+name: 'Tofu Apply'
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'iac/**/*.tf'
+
+jobs:
+  tofu-apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+
+      - name: Tofu Init
+        run: tofu -chdir=iac init
+
+      - name: Tofu Apply
+        run: tofu -chdir=iac apply -auto-approve
