@@ -2,8 +2,6 @@ name: 'build-push-prod'
 on:
   release:
     types: [published]
-    paths:
-      - 'apps/*/**'
 jobs:
   release-build-push:
     runs-on: ubuntu-latest
