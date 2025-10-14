@@ -1,0 +1,50 @@
+name: 'Tofu Plan'
+on:
+  pull_request:
+
+jobs:
+  tofu:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+
+      - name: Tofu Init
+        run: tofu -chdir=iac init
+
+      - name: Tofu Format
+        run: tofu -chdir=iac fmt -check
+
+      - name: Tofu Plan
+        run: tofu -chdir=iac plan -out=tfplan
+
+      - name: Add Plan Comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Plan Output
+            \`\`\`
+            ${process.env.PLAN_OUTPUT}
+            \`\`\`
+            `;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
