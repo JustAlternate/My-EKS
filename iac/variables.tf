@@ -1,11 +1,11 @@
 variable "cluster_name" {
-  type        = string
-  default     = "justalternate-eks-cluster"
+  type    = string
+  default = "justalternate-eks-cluster"
 }
 
 variable "kubernetes_version" {
-  type        = string
-  default     = "1.34"
+  type    = string
+  default = "1.34"
 }
 
 variable "vpc_cidr" {

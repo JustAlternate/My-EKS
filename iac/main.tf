@@ -1,8 +1,3 @@
-resource "aws_key_pair" "my_ssh_key" {
-  key_name   = "justalternate-ssh-key-pair-for-eks"
-  public_key = file("~/.ssh/id_ed25519.pub")
-}
-
 # EKS Cluster
 resource "aws_eks_cluster" "main" {
   name     = var.cluster_name
@@ -52,7 +47,7 @@ resource "aws_eks_node_group" "main" {
   }
 
   instance_types = var.node_instance_types
-  ami_type       = "AL2023_ARM_64_STANDARD"  # ARM AMI for t4g instances
+  ami_type       = "AL2023_ARM_64_STANDARD" # ARM AMI for t4g instances
   # release_version will be automatically set to match the cluster version
 
   depends_on = [
