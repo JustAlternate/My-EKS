@@ -24,6 +24,14 @@ jobs:
           publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: get_tag
+        run: |
+          if [ -n "${{ steps.drafter.outputs.tag_name }}" ]; then
+            echo "tag=${{ steps.drafter.outputs.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          fi
       
   build_push_prod:
     runs-on: ubuntu-latest
