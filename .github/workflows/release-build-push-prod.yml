@@ -23,7 +23,7 @@ jobs:
 
   build_push_prod:
     runs-on: ubuntu-latest
-    if: success() && needs.release.outputs.release_tag != ''
+    if: needs.release.outputs.release_tag != ''
     needs: [release]
 
     steps:
