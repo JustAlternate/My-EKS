@@ -1,9 +1,8 @@
 name: 'build-push-prod'
 
 on:
-  push:
-    tags:
-      - '**'
+  release:
+    types: [published]
 
 jobs:
   release-build-push:
