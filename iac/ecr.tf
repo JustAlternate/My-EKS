@@ -1,42 +1,14 @@
-resource "aws_ecr_repository" "prod_repositories" {
+resource "aws_ecr_repository" "repositories" {
   for_each = toset(["api", "web-server"])
-  name     = "${each.key}-prod"
-  image_tag_mutability = "IMMUTABLE"
-  force_delete         = true
-}
-
-resource "aws_ecr_lifecycle_policy" "prod_repositories_policy" {
-  for_each = aws_ecr_repository.prod_repositories
-
-  repository = aws_ecr_repository.prod_repositories[each.key].name
-
-  policy = jsonencode({
-    rules = [
-      {
-        rulePriority = 1
-        description  = "Keep production images"
-        selection = {
-          tagStatus   = "any"
-          countType   = "imageCountMoreThan"
-          countNumber = 50
-        }
-        action = { type = "expire" }
-      }
-    ]
-  })
-}
-
-resource "aws_ecr_repository" "dev_repositories" {
-  for_each = toset(["api", "web-server"])
-  name     = "${each.key}-dev"
+  name     = each.key
   image_tag_mutability = "MUTABLE"
   force_delete         = true
 }
 
-resource "aws_ecr_lifecycle_policy" "dev_repositories_policy" {
-  for_each = aws_ecr_repository.dev_repositories
+resource "aws_ecr_lifecycle_policy" "repositories_policy" {
+  for_each = aws_ecr_repository.repositories
 
-  repository = aws_ecr_repository.dev_repositories[each.key].name
+  repository = aws_ecr_repository.repositories[each.key].name
 
   policy = jsonencode({
     rules = [
@@ -50,6 +22,18 @@ resource "aws_ecr_lifecycle_policy" "dev_repositories_policy" {
           countNumber = 1
         }
         action = {
+          type = "expire"
+        }
+      },
+      {
+        rulePriority = 2
+        description  = "Keep only 50 images"
+        selection = {
+          tagStatus   = "any"
+          countType   = "imageCountMoreThan"
+          countNumber = 50
+        }
+        action = { 
           type = "expire"
         }
       }

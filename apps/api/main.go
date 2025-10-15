@@ -13,5 +13,8 @@ func root(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/", root)
 	log.Println("Starting server on :3030")
-	http.ListenAndServe(":3030", nil)
+	err := http.ListenAndServe(":3030", nil)
+	if err != nil {
+		log.Fatalf("error when listen and server: %v", err)
+	}
 }

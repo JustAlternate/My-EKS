@@ -2,22 +2,27 @@
 
 ## Features / TODO
 
-- [x] tfstate Backend bucket S3
+- [x] State tfstate Backend bucket S3
 - [x] EKS (AWS managed K8S)
-- [x] Managed Node Group multi AZ (only using tg4.small and 2 dynamic AZ configured)
+- [x] CloudWatch for K8S
+- [x] Managed Node Group multi AZ (only using tg4.small and 2 AZ configured)
 - [x] ECR (Managed Registry)
-- [x] CloudWatch
 - [x] CI (lint, format iac code and tf plan and tf apply)
-- [ ] CI (lint, format, build, push Containerfile)
+- [x] CI (lint, format, release, build, push Containerfile)
+- [ ] Prometheus on a static EC2 separated from the cluster with Grafana
 - [ ] 2 Apps deployable (one that expose a public web-server and send a request to the second one that update the counter in a RDS)
-- [ ] add healthchecks to the apps (liveness & readiness)
+- [ ] healthchecks in the apps (liveness & readiness)
+- [ ] Add metrics in the apps
 - [ ] RDS (postgresql that will store a counter)
 - [ ] CD (Argo CD for deploying images)
 - [ ] CD (Automatic rollback on liveness failure)
 - [ ] Devenv shell to setup dev environment
 - [ ] Helm support for apps deployment
 - [ ] Karpenter for automatic spot provisionning (replace Node group)
-- [ ] Grafana for visualizing prometheus and CloudWatch metrics
+- [ ] Script to simulate traffic and trigger scaling
+- [ ] Chaos engineering to simulate failing code deployment, slow RDS ? ...
+- [ ] Simple e-BPF tracing
+- [ ] Cilium service meshing for circuit breaking
 
 ## Init
 
@@ -94,4 +99,9 @@ docker tag web-server:latest $AWS_ECR_URL/web-server:latest
 # Push them
 docker push $AWS_ECR_URL/api:latest
 docker push $AWS_ECR_URL/web-server:latest
+```
+
+#### Deploy our images from ECR
+
+```
 ```

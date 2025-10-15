@@ -59,7 +59,7 @@ jobs:
         run: |
           docker build -t api:latest         ./apps/api        -f apps/api/Containerfile
           docker build -t web-server:latest  ./apps/web-server -f apps/web-server/Containerfile
-          docker tag api:latest         $ECR_REGISTRY/api-prod:$TAG
-          docker tag web-server:latest  $ECR_REGISTRY/web-server-prod:$TAG
-          docker push $ECR_REGISTRY/api-prod:$TAG
-          docker push $ECR_REGISTRY/web-server-prod:$TAG
+          docker tag api:latest         $ECR_REGISTRY/api:$TAG
+          docker tag web-server:latest  $ECR_REGISTRY/web-server:$TAG
+          docker push $ECR_REGISTRY/api:$TAG
+          docker push $ECR_REGISTRY/web-server:$TAG

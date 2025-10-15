@@ -1,8 +1,7 @@
 name: 'Tofu Apply'
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'iac/**/*.tf'
 

@@ -18,8 +18,12 @@ func (a *APIHandler) send(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	defer resp.Body.Close()
 	w.WriteHeader(http.StatusOK)
+
+	err = resp.Body.Close()
+	if err != nil {
+		log.Fatalf("error occurred when closing body: %v", err)
+	}
 }
 
 func main() {
@@ -31,5 +35,8 @@ func main() {
 	http.HandleFunc("/send", apiHandler.send)
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	log.Println("Starting server on :8080")
-	http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatalf("error when listen and server: %v", err)
+	}
 }
