@@ -3,8 +3,44 @@ on:
   pull_request:
     paths:
       - 'apps/*/**'
+
 jobs:
+  lint-format:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: golangci-lint api
+      uses: golangci/golangci-lint-action@v8
+      with:
+          working-directory: apps/api
+
+    - name: golangci-lint web-server
+      uses: golangci/golangci-lint-action@v8
+      with:
+          working-directory: apps/web-server
+
+    - name: Format golang
+      uses: Jerome1337/gofmt-action@v1.0.5
+      with:
+        gofmt-path: './apps'
+        gofmt-flags: '-l -d'
+    
+    - name: Lint api Containerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: apps/api/Containerfile 
+        ignore: 'DL3007'
+
+    - name: Lint web-server Containerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: apps/web-server/Containerfile 
+        ignore: 'DL3007'
+    
   build-push:
+    needs: lint-format
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -23,16 +59,18 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Build, tag, and push image to Amazon ECR
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+    - name: Build
       run: |
         docker build ./apps/api/ -t api -f apps/api/Containerfile
         docker build ./apps/web-server/ -t web-server -f apps/web-server/Containerfile
 
-        docker tag api:latest $ECR_REGISTRY/api-dev:$BRANCH_NAME
-        docker tag web-server:latest $ECR_REGISTRY/web-server-dev:$BRANCH_NAME
+    - name: Tag & Push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+      run: |
+        docker tag api:latest $ECR_REGISTRY/api:$BRANCH_NAME
+        docker tag web-server:latest $ECR_REGISTRY/web-server:$BRANCH_NAME
 
-        docker push $ECR_REGISTRY/api-dev:$BRANCH_NAME
-        docker push $ECR_REGISTRY/web-server-dev:$BRANCH_NAME
+        docker push $ECR_REGISTRY/api:$BRANCH_NAME
+        docker push $ECR_REGISTRY/web-server:$BRANCH_NAME

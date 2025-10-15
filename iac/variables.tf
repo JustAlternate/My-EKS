@@ -17,7 +17,7 @@ variable "vpc_cidr" {
 variable "node_desired_size" {
   description = "Desired number of worker nodes"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "node_max_size" {
