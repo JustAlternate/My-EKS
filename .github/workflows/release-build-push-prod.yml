@@ -34,7 +34,7 @@ jobs:
           fi
 
   build-push-prod:
-    needs: lint-format
+    needs: release
     runs-on: ubuntu-latest
     strategy:
       matrix:
