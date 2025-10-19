@@ -5,15 +5,16 @@
 - [x] State tfstate Backend bucket S3
 - [x] EKS (AWS managed K8S)
 - [x] CloudWatch for K8S
-- [x] Managed Node Group multi AZ (only using tg4.small and 2 AZ configured)
+- [x] Managed Node Group multi AZ (only using tg4.small and 2 AZ configured) (arm64)
 - [x] Simple VPC and Security Group for EKS and the Node Group
 - [x] ECR (Managed Registry)
 - [x] CI for OpenTofu (lint, format iac code and tf plan and tf apply + comment in the PR)
-- [x] CI for our Golang Micro-services (lint, format, release, build, push Containerfile)
-- [ ] RDS (simple postgresql that will store a counter)
-- [ ] 2 micro-services deployable (one that expose a public web server and send a request to the second one that update the counter in a RDS)
+- [x] CI for our Golang micro-services (lint, format, release, build on arm64 runners and push images on ECR)
+- [x] Proper release when rebasing on master & push the release tag on ECR for each services 
+- [x] RDS (Simple single RDS that will store a counter and accessible from our micro-services running in EKS) (inside a private subnet with a private Route53 DNS)
+- [x] 2 micro-services deployable (one that expose a public web server and send a request to the second one that update the counter in a RDS)
+- [x] Deploy manually to EKS (Deployments + Service)
 - [ ] Healthchecks in the micro-services (liveness & readiness)
-- [ ] Deploy manually to EKS (Deployments + Service)
 - [ ] Prometheus & Grafana (AMP/AMG)
 - [ ] Add Metrics in each micro-services
 - [ ] Craft great dashboard for the RDS, EKS and the Apps
@@ -29,15 +30,17 @@
 
 ## Bonus
 
+- [ ] Create ADR for the choices made along the way ?
 - [ ] Devenv shell to setup dev environment
 - [ ] Helm support for apps deployment
 - [ ] Karpenter for automatic spot provisionning (replace Node group)
 - [ ] Chaos engineering to simulate failing code deployment, kill eks node, slow RDS ? ...
 - [ ] Post Mortem
 - [ ] Create a Runbook based on the possible failures
-- [ ] Simple e-BPF tracing
+- [ ] Simple golang e-BPF tracing
 - [ ] Cilium (Circuit breaking ?) 
-- [ ] Loki & Tempo (OpenTelemetry)
+- [ ] Tempo ? (OpenTelemetry)
+- [ ] LinkedIn post lmao
 
 ## Init
 
@@ -99,9 +102,9 @@ AWS_ECR_URL=$AWS_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 ```
 
 ```
-# Build them
-docker build ./apps/api/ -t api -f apps/api/Containerfile
-docker build ./apps/web-server/ -t web-server -f apps/web-server/Containerfile
+# Build them for arm64
+docker build --platform linux/arm64 ./apps/api/ -t api -f apps/api/Containerfile
+docker build --platform linux/arm64 ./apps/web-server/ -t web-server -f apps/web-server/Containerfile
 ```
 
 ```
@@ -120,8 +123,9 @@ Or
 
 Copy `.github/workflows/build-push-dev.yml` and create one for your service
 
-#### Deploy our images from ECR
+#### Deploy our micro-services to EKS using our stored images in ECR
 
 ```
-todo
+kubectl apply -f ./services/api
+kubectl apply -f ./services/web-server
 ```

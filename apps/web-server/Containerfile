@@ -1,23 +1,25 @@
-FROM golang:alpine AS builder
+FROM cgr.dev/chainguard/go:latest AS builder
 
 WORKDIR /app
 
 COPY go.mod go.sum ./
 
-RUN go mod download
-
 COPY *.go ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o web-server
+COPY static ./static
+
+RUN CGO_ENABLED=0 go build -o web-server
 
 # https://images.chainguard.dev/directory/image/static/versions 
 # ultra minimal image for running static binaries in production
-FROM cgr.dev/chainguard/static:latest AS runner
+FROM cgr.dev/chainguard/glibc-dynamic:latest AS runner
 
 WORKDIR /app
 
 COPY --from=builder /app/web-server ./web-server
+COPY --from=builder /app/static ./static
+
 
 EXPOSE 8080
 
-CMD [ "/web-server" ]
+CMD [ "/app/web-server" ]
