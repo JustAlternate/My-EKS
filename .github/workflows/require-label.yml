@@ -3,8 +3,6 @@ name: Require semver label
 on:
   pull_request:
     types: 
-      - opened
-      - synchronize
       - labeled
       - unlabeled
     branches: [main]
