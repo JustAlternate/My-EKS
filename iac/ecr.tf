@@ -1,6 +1,6 @@
 resource "aws_ecr_repository" "repositories" {
-  for_each = toset(["api", "web-server"])
-  name     = each.key
+  for_each             = toset(["api", "web-server"])
+  name                 = each.key
   image_tag_mutability = "MUTABLE"
   force_delete         = true
 }
@@ -33,7 +33,7 @@ resource "aws_ecr_lifecycle_policy" "repositories_policy" {
           countType   = "imageCountMoreThan"
           countNumber = 50
         }
-        action = { 
+        action = {
           type = "expire"
         }
       }

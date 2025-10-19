@@ -1,1 +1,39 @@
 <p> Hello from test </p>
+
+<div id="counter">0</div> 
+
+<button onclick="sendAndUpdate()"> Button </button>
+
+<script>
+function sendAndUpdate() {
+
+	// Get the current URL and append '/send'
+	const currentUrl = window.location.origin;
+	const sendUrl =  currentUrl + '/send';
+
+	console.log(sendUrl)
+
+	// Create a new GET request
+	fetch(sendUrl, {
+			method: 'GET',
+			headers: {
+					'Content-Type': 'text/html'
+			}
+	})
+	.then(response => {
+			if (!response.ok) {
+					throw new Error('Network response was not ok');
+			}
+			return response.text();
+	})
+	.then(data => {
+			console.log('Success:', data);
+			var counter = document.getElementById('counter');
+			counter.innerHTML = data;
+	})
+	.catch(error => {
+			console.error('Error:', error);
+			alert('Error sending GET request: ' + error.message);
+	});
+}
+</script>

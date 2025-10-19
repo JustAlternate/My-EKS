@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     outputs:
       release_tag: ${{ steps.get_tag.outputs.tag }}
     steps:
@@ -35,7 +35,7 @@ jobs:
 
   build-push-prod:
     needs: release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     strategy:
       matrix:
         service: [api, web-server]

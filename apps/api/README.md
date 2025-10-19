@@ -1,6 +1,11 @@
-# Sample API
+# Sample API with its postgres server in a compose file
 - On `GET /`, log the request (will update a counter in a PG in the future)
 
+```
+cp env.dist .env
+```
 
-`docker build . -t api -f Containerfile`
-`docker run -p 3030:3030 api:latest`
+Launch the postgres and api server in local
+```
+docker compose up
+```

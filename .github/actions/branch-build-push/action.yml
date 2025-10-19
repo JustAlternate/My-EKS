@@ -16,7 +16,7 @@ runs:
   steps:
   - name: Build Docker Image
     run: |
-      docker build ./apps/${{ inputs.service }} -t ${{ inputs.service }} -f apps/${{ inputs.service }}/Containerfile
+      docker build --platform linux/arm64 ./apps/${{ inputs.service }} -t ${{ inputs.service }} -f apps/${{ inputs.service }}/Containerfile
     shell: bash
 
   - name: Tag & Push Image

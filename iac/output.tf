@@ -27,3 +27,13 @@ output "cluster_status" {
   description = "Status of the EKS cluster"
   value       = aws_eks_cluster.main.status
 }
+
+output "postgres_connection_info" {
+  description = "PostgreSQL connection details"
+  value = {
+    host     = aws_db_instance.postgres.endpoint
+    port     = aws_db_instance.postgres.port
+    database = aws_db_instance.postgres.db_name
+    username = aws_db_instance.postgres.username
+  }
+}
