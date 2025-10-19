@@ -12,18 +12,20 @@
 - [x] CI for our Golang Micro-services (lint, format, release, build, push Containerfile)
 - [ ] RDS (simple postgresql that will store a counter)
 - [ ] 2 micro-services deployable (one that expose a public web server and send a request to the second one that update the counter in a RDS)
-- [ ] Setup and configure HPA & PDB (HorizontalPodAutoscaler & PodDistruptionBudget)
 - [ ] Healthchecks in the micro-services (liveness & readiness)
-- [ ] Prometheus & Grafana on a static EC2 separated from the cluster (avoiding SPOF for the Observability Stack ? Or maybe go with AMP/AMG)
-- [ ] Craft great dashboard for the RDS, EKS and the Apps
+- [ ] Deploy manually to EKS (Deployments + Service)
+- [ ] Prometheus & Grafana (AMP/AMG)
 - [ ] Add Metrics in each micro-services
+- [ ] Craft great dashboard for the RDS, EKS and the Apps
+- [ ] Setup and configure HPA & PDB (HorizontalPodAutoscaler & PodDistruptionBudget)
+- [ ] Script to simulate traffic and trigger scaling (grafana/k6 ?)
 - [ ] CD (Argo CD for deploying)
-- [ ] Architecture Diagram
 - [ ] CD (Automatic rollback with Argo Rollout)
+- [ ] Architecture Diagram
+- [ ] RDS Backup & Restore (Velero ?)
 - [ ] Define clear SLA / SLI / SLO for our Application feature
 - [ ] Monitor the SLI/SLO using a Grafana dashboard
-- [ ] Script to simulate traffic and trigger scaling (grafana/k6 ?)
-- [ ] Restauration RDS (Velero ?)
+- [ ] Finalize README + demo screenshot + demo gif
 
 ## Bonus
 
@@ -31,7 +33,7 @@
 - [ ] Helm support for apps deployment
 - [ ] Karpenter for automatic spot provisionning (replace Node group)
 - [ ] Chaos engineering to simulate failing code deployment, kill eks node, slow RDS ? ...
-- [ ] Create a Post Mortem
+- [ ] Post Mortem
 - [ ] Create a Runbook based on the possible failures
 - [ ] Simple e-BPF tracing
 - [ ] Cilium (Circuit breaking ?) 

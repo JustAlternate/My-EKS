@@ -1,0 +1,26 @@
+name: 'Build & Push'
+description: 'Build the docker image, Tag it with the branch name and Push it to ECR'
+
+inputs:
+  service:
+    description: 'Service directory (e.g., api, web-server)'
+  ecr-registry:
+    description: 'ECR registry URL'
+    required: true
+  branch-name:
+    description: 'Branch for image tag'
+    required: true
+
+runs:
+  using: composite
+  steps:
+  - name: Build Docker Image
+    run: |
+      docker build ./apps/${{ inputs.service }} -t ${{ inputs.service }} -f apps/${{ inputs.service }}/Containerfile
+    shell: bash
+
+  - name: Tag & Push Image
+    run: |
+      docker tag ${{ inputs.service }}:latest ${{ inputs.ecr-registry }}/${{ inputs.service }}:${{ inputs.branch-name }}
+      docker push ${{ inputs.ecr-registry }}/${{ inputs.service }}:${{ inputs.branch-name }}
+    shell: bash

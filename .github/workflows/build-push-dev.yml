@@ -1,4 +1,4 @@
-name: 'build-push-dev'
+name: 'lint-build-push-dev'
 on:
   pull_request:
     paths:
@@ -7,70 +7,43 @@ on:
 jobs:
   lint-format:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api, web-server]
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Lint & Format
+        uses: ./.github/actions/lint-format
+        with:
+          service: ${{ matrix.service }}
 
-    - name: golangci-lint api
-      uses: golangci/golangci-lint-action@v8
-      with:
-          working-directory: apps/api
-
-    - name: golangci-lint web-server
-      uses: golangci/golangci-lint-action@v8
-      with:
-          working-directory: apps/web-server
-
-    - name: Format golang
-      uses: Jerome1337/gofmt-action@v1.0.5
-      with:
-        gofmt-path: './apps'
-        gofmt-flags: '-l -d'
-    
-    - name: Lint api Containerfile
-      uses: hadolint/hadolint-action@v3.1.0
-      with:
-        dockerfile: apps/api/Containerfile 
-        ignore: 'DL3007'
-
-    - name: Lint web-server Containerfile
-      uses: hadolint/hadolint-action@v3.1.0
-      with:
-        dockerfile: apps/web-server/Containerfile 
-        ignore: 'DL3007'
-    
-  build-push:
+  build-push-dev:
     needs: lint-format
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api, web-server]
     permissions:
       id-token: write
-
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v5.1.0
-      with:
-        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Build
-      run: |
-        docker build ./apps/api/ -t api -f apps/api/Containerfile
-        docker build ./apps/web-server/ -t web-server -f apps/web-server/Containerfile
+      - name: Login to ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Tag & Push image to Amazon ECR
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
-      run: |
-        docker tag api:latest $ECR_REGISTRY/api:$BRANCH_NAME
-        docker tag web-server:latest $ECR_REGISTRY/web-server:$BRANCH_NAME
-
-        docker push $ECR_REGISTRY/api:$BRANCH_NAME
-        docker push $ECR_REGISTRY/web-server:$BRANCH_NAME
+      - name: Build & Push Image
+        uses: ./.github/actions/branch-build-push
+        with:
+          service: ${{ matrix.service }}
+          ecr-registry: ${{ steps.ecr-login.outputs.registry }}
+          branch-name: ${{ github.head_ref || github.ref_name }}
