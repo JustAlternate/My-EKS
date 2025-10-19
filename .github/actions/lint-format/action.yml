@@ -1,0 +1,25 @@
+name: 'Lint & Format'
+description: 'Runs golangci-lint, gofmt, and Dockerfile linter for a service'
+inputs:
+  service:
+    description: 'Service directory (e.g., api, web-server)'
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v8
+      with:
+        working-directory: apps/${{ inputs.service }}
+
+    - name: Format golang
+      uses: Jerome1337/gofmt-action@v1.0.5
+      with:
+        gofmt-path: apps/${{ inputs.service }}
+        gofmt-flags: '-l -d'
+
+    - name: Lint Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: apps/${{ inputs.service }}/Containerfile
+        ignore: 'DL3007'

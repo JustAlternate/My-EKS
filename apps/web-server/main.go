@@ -19,7 +19,6 @@ func (a *APIHandler) send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-
 	err = resp.Body.Close()
 	if err != nil {
 		log.Fatalf("error occurred when closing body: %v", err)
