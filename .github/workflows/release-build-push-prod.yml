@@ -1,4 +1,4 @@
-name: Release and Deploy to Prod
+name: release-build-push-prod
 
 on:
   push:

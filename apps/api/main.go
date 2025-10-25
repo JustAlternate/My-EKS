@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -107,9 +109,29 @@ func (app *App) root(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func main() {
-	log.Println("Starting API service...")
+var (
+	ready bool = false
+	mu    sync.Mutex
+)
 
+func main() {
+	server := &http.Server{
+		Addr: ":3030",
+	}
+
+	log.Println("Serving liveness and readiness...")
+	http.HandleFunc("/liveness", liveness)
+	http.HandleFunc("/readiness", readiness)
+
+	go func() {
+		log.Println("Starting server on :3030")
+		err := server.ListenAndServe()
+		if err != nil {
+			log.Fatalf("error when listen and serve: %v", err)
+		}
+	}()
+
+	log.Println("Connecting to the database...")
 	conn, err := connect()
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -127,26 +149,63 @@ func main() {
 
 	log.Println("Database initialization complete")
 
-	go func() {
-		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
-		<-sigint
-
-		log.Println("Shutting down server...")
-		if app.conn != nil {
-			err = app.conn.Close(context.Background())
-			if err != nil {
-				log.Printf("Error closing conn: %v", err)
-			}
-		}
-		os.Exit(0)
-	}()
-
 	http.HandleFunc("/", app.root)
-	log.Println("Starting server on :3030")
 
-	err = http.ListenAndServe(":3030", nil)
+	mu.Lock()
+	ready = true
+	mu.Unlock()
+
+	log.Println("Application is READY")
+
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
+	<-sigint
+
+	log.Println("Shutting down server...")
+
+	mu.Lock()
+	ready = false
+	mu.Unlock()
+
+	// Graceful shutdown with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("Server shutdown error: %v", err)
+	}
+
+	if app.conn != nil {
+		if err := app.conn.Close(context.Background()); err != nil {
+			log.Printf("Error closing conn: %v", err)
+		}
+	}
+	log.Println("Server stopped")
+}
+
+func liveness(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	_, err := fmt.Fprintln(w, "OK")
 	if err != nil {
-		log.Fatalf("error when listen and serve: %v", err)
+		log.Fatal(err)
+	}
+
+}
+
+func readiness(w http.ResponseWriter, r *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
+	if ready {
+		w.WriteHeader(http.StatusOK)
+		_, err := fmt.Fprintln(w, "OK")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		_, err := fmt.Fprintln(w, "Service Unavailable")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }

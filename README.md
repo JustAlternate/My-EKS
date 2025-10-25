@@ -2,35 +2,55 @@
 
 ## Features / TODO
 
-- [x] State tfstate Backend bucket S3
-- [x] EKS (AWS managed K8S)
-- [x] CloudWatch for K8S
-- [x] Managed Node Group multi AZ (only using tg4.small and 2 AZ configured) (arm64)
+### iac setup
+- [x] Store tfstate in S3 bucket
+- [x] EKS (AWS managed K8S) + CloudWatch for it
+- [x] Managed Node Group multi AZ (only using tg4.small and 2 AZ configured) (arm64, Amazon linux AMI)
 - [x] Simple VPC and Security Group for EKS and the Node Group
+
+### Release engineering
 - [x] ECR (Managed Registry)
 - [x] CI for OpenTofu (lint, format iac code and tf plan and tf apply + comment in the PR)
 - [x] CI for our Golang micro-services (lint, format, release, build on arm64 runners and push images on ECR)
 - [x] Proper release when rebasing on master & push the release tag on ECR for each services 
+
+### Micro-services and infra setup
 - [x] RDS (Simple single RDS that will store a counter and accessible from our micro-services running in EKS) (inside a private subnet with a private Route53 DNS)
 - [x] 2 micro-services deployable (one that expose a public web server and send a request to the second one that update the counter in a RDS)
-- [x] Deploy manually to EKS (Deployments + Service)
-- [ ] Healthchecks in the micro-services (liveness & readiness)
-- [ ] Prometheus & Grafana (AMP/AMG)
+- [x] Deploy manually to EKS (Deployments + Service in simple yaml)
+- [x] Healthchecks in the micro-services (liveness, readiness & startup probes)
+
+### Observability
+- [ ] Managed Prometheus & Grafana (AMP/AMG)
 - [ ] Add Metrics in each micro-services
-- [ ] Craft great dashboard for the RDS, EKS and the Apps
-- [ ] Setup and configure HPA & PDB (HorizontalPodAutoscaler & PodDistruptionBudget)
+- [ ] Grafana dashboard for our EKS (CloudWatch)
+- [ ] Grafana dashboards for our micro-services
+- [ ] Grafana dashboard for our RDS (CloudWatch)
+- [ ] Node Exporter for our instances
+
+### Scaling and K8S config
+- [ ] Learn, setup and configure HPA (HorizontalPodAutoscaler)
+- [ ] Learn and configure PDB (PodDistruptionBudget)
 - [ ] Script to simulate traffic and trigger scaling (grafana/k6 ?)
+- [ ] Script to randomly kill a pod
+
+### Automatic deployment
 - [ ] CD (Argo CD for deploying)
 - [ ] CD (Automatic rollback with Argo Rollout)
-- [ ] Architecture Diagram
-- [ ] RDS Backup & Restore (Velero ?)
+
+### SRE stuff
+- [ ] Monitor golden signals in Grafana 
 - [ ] Define clear SLA / SLI / SLO for our Application feature
-- [ ] Monitor the SLI/SLO using a Grafana dashboard
-- [ ] Finalize README + demo screenshot + demo gif
+- [ ] Monitor our SLI / SLO in Grafana
+
+### Docs
+- [ ] Architecture Diagram
+- [ ] Create some small ADR for the choices made along the way
+- [ ] Finalize README + demo screenshots + demo gif
 
 ## Bonus
 
-- [ ] Create ADR for the choices made along the way ?
+- [ ] RDS Backup & Restore (Velero ?)
 - [ ] Devenv shell to setup dev environment
 - [ ] Helm support for apps deployment
 - [ ] Karpenter for automatic spot provisionning (replace Node group)
