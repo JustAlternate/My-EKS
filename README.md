@@ -21,7 +21,8 @@
 - [x] Healthchecks in the micro-services (liveness, readiness & startup probes)
 
 ### Observability
-- [ ] Managed Prometheus & Grafana (AMP/AMG)
+- [X] Access the Kubernetes Dashboard (deployed using helm)
+- [ ] Prometheus & Grafana
 - [ ] Add Metrics in each micro-services
 - [ ] Grafana dashboard for our EKS (CloudWatch)
 - [ ] Grafana dashboards for our micro-services
@@ -31,8 +32,13 @@
 ### Scaling and K8S config
 - [ ] Learn, setup and configure HPA (HorizontalPodAutoscaler)
 - [ ] Learn and configure PDB (PodDistruptionBudget)
+- [ ] Script to simulate scaling by sending a ton of requests (grafana/k6)
+
+### Chaos Engineering
 - [ ] Script to simulate traffic and trigger scaling (grafana/k6 ?)
-- [ ] Script to randomly kill a pod
+- [ ] Script to make a sanity check of both micro-services (endpoints are 200, kubectl get pods shows RESTARTS=0 and Ready status true)
+- [ ] Script to simulate a DB/readiness failure (kubectl set env DB_URL=invalid -> rollout -> observe /readiness -> 503 -> pod state is not altered (no restart), and kubectl get endpoints is empty)
+- [ ] Script to simulate a liveness failure (kill the pod -> pod will be restarted, crashloopbackoff if failures are repeating)
 
 ### Automatic deployment
 - [ ] CD (Argo CD for deploying)
@@ -43,6 +49,7 @@
 - [ ] Define clear SLA / SLI / SLO for our Application feature
 - [ ] Monitor our SLI / SLO in Grafana
 
+
 ### Docs
 - [ ] Architecture Diagram
 - [ ] Create some small ADR for the choices made along the way
@@ -50,6 +57,8 @@
 
 ## Bonus
 
+- [ ] Use spot in our Managed Node Group (using a custom launch template)
+- [ ] Replace default ELB when creating a service type load balancer to a ALB
 - [ ] RDS Backup & Restore (Velero ?)
 - [ ] Devenv shell to setup dev environment
 - [ ] Helm support for apps deployment
@@ -63,6 +72,8 @@
 - [ ] LinkedIn post lmao
 
 ## Init
+
+### OpenTofu
 
 ```
 cp env.dist .env
@@ -80,6 +91,30 @@ Get access to the cluster through kubectl on remote machine
 ```
 aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name justalternate-eks-cluster 
 ```
+
+### Access the kubernetes dashboard 
+
+![](./assets/kubernetes-dashboard.png)
+
+Install the dashboard using Helm
+
+```
+./services/kube-dashboard/deploy-dashboard.sh
+```
+
+Create a connection to the dashboard using port-forward and generate a token
+
+```
+./services/kube-dashboard/open-dashboard-and-get-token.sh
+```
+
+Naviguate to the dashboard
+
+```
+firefox https://localhost:8443
+```
+
+### ECR
 
 Login to the ECR in case you want to manually push image to it
 ```
@@ -141,7 +176,7 @@ docker push $AWS_ECR_URL/web-server:latest
 
 Or 
 
-Copy `.github/workflows/build-push-dev.yml` and create one for your service
+add you service in the `.github/workflows/build-push-dev.yml` and the `.github/workflows/release-build-push-prod`
 
 #### Deploy our micro-services to EKS using our stored images in ECR
 
