@@ -3,10 +3,12 @@
 ## Features / TODO
 
 ### iac setup
+- [ ] Setup a global budget limit of $20
 - [x] Store tfstate in S3 bucket
 - [x] EKS (AWS managed K8S) + CloudWatch for it
 - [x] Managed Node Group multi AZ (only using tg4.small and 2 AZ configured) (arm64, Amazon linux AMI)
 - [x] Simple VPC and Security Group for EKS and the Node Group
+- [x] OIDC + IRSA everywhere
 
 ### Release engineering
 - [x] ECR (Managed Registry)
@@ -22,7 +24,7 @@
 
 ### Observability
 - [X] Access the Kubernetes Dashboard (deployed using helm)
-- [ ] Prometheus & Grafana
+- [X] Prometheus, Loki & Grafana (in a separate namespace and on another node group)
 - [ ] Add Metrics in each micro-services
 - [ ] Grafana dashboard for our EKS (CloudWatch)
 - [ ] Grafana dashboards for our micro-services
@@ -39,6 +41,7 @@
 - [ ] Script to make a sanity check of both micro-services (endpoints are 200, kubectl get pods shows RESTARTS=0 and Ready status true)
 - [ ] Script to simulate a DB/readiness failure (kubectl set env DB_URL=invalid -> rollout -> observe /readiness -> 503 -> pod state is not altered (no restart), and kubectl get endpoints is empty)
 - [ ] Script to simulate a liveness failure (kill the pod -> pod will be restarted, crashloopbackoff if failures are repeating)
+- [ ] Look for chaos monkey framework
 
 ### Automatic deployment
 - [ ] CD (Argo CD for deploying)
@@ -113,6 +116,21 @@ Naviguate to the dashboard
 ```
 firefox https://localhost:8443
 ```
+
+### Install the Observability stack (prometheus, grafana, loki)
+
+```
+./services/observability-stack/deploy-and-access.sh
+```
+
+```
+firefox http://localhost:3000
+```
+
+Connect to grafana using the password specified in `./services/observability-stack/prometheus-stack-values.yaml` which is : `admin`
+
+Btw I also use OIDC to allow grafana to connect to CloudWatch, and to install the amazon ebs csi driver in terraform
+
 
 ### ECR
 

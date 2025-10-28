@@ -71,7 +71,7 @@ In a first iteration i decided to only go with a Simple one instance type manage
 
 When i started to create a CI for terraform I came a cross a problem that was "how to make my ci have the right to get the state and to provision stuff ?" I found in the AWS Docs
 that i could use OIDC for it and so i setup it for my github action. this was not too complicated, but I think there is a lot to learn more about it.
-(i also decided to use OIDC because i didnt wanted to add my aws credentials in env var of my repos)
+(i also decided to use OIDC because i didnt wanted to add my aws credentials in env var of my repos) -> my lead tech senior infra said that it was super cool ! and that they should be doing the same at my company !!!
 
 
 I also try to make my managed service as much multi AZ as possible (with at least 2 AZ each time) so that I, like in real production grade infrasturcture avoid SPOFs.
@@ -152,3 +152,18 @@ Now im currently setting up healthchecks, statup probe, readiness, liveness on e
 
 After talking with my lead tech infra at iavize, i realized it was possible to use spot in a managed node group thanks to "launch template", so i added this step in the bonus section of my todo list.
 
+Talking to my lead tech infra also made me realized that AMP/AMG isnt the best options in terms of pricing and that most company because of that, prefer to host their own observability stack themselves
+and most particularly for prometheus and grafana
+
+From this point of view there is multiple way to get this monitoring stack up and running
+
+1) the statup way: put every thing in our EKS but make the monitoring stack on a different node group and its own namespace
+2) the scale up way: create a 2nd cluster to host the monitoring stack
+3) the giant tech enterprise way: use seperate cluster and a separate account
+
+To keep thing no too complicated i decided to go with option 1) (this is also what my company does btw)
+
+While setting up prometheus, grafana and loki, i decided to use the very good helm chart that is provided by the kube-prometheus-stack from the prometheus community
+I also needed to add an EKS addon for block storage (ebs csi), so i updated my iac.
+
+In order to allow grafana to access cloudwatch source, i setup oidc, which was basically the same config i used for the CI

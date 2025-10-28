@@ -32,3 +32,11 @@ resource "aws_iam_role_policy_attachment" "admin_access" {
   role       = aws_iam_role.github_actions_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
+
+
+# global oidc for eks
+resource "aws_iam_openid_connect_provider" "eks_oidc" {
+  url             = aws_eks_cluster.main.identity.0.oidc.0.issuer
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+}
