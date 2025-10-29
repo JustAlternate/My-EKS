@@ -1,0 +1,73 @@
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  storage:
+    type: filesystem
+  
+  schemaConfig:
+    configs:
+      - from: 2024-01-01
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+  
+  server:
+    http_listen_port: 3100
+  
+  distributor:
+    ring:
+      kvstore:
+        store: inmemory
+  
+  ingester:
+    lifecycler:
+      ring:
+        kvstore:
+          store: inmemory
+    chunk_idle_period: 5m
+    chunk_retain_period: 30s
+  
+  storage_config:
+    tsdb_shipper:
+      active_index_directory: /var/loki/tsdb-index
+      cache_location: /var/loki/tsdb-cache
+    filesystem:
+      directory: /var/loki/chunks
+  
+  limits_config:
+    enforce_metric_name: false
+    reject_old_samples: true
+    reject_old_samples_max_age: 168h
+    ingestion_rate_mb: 4
+    ingestion_burst_size_mb: 6
+    retention_period: 720h
+  
+  compactor:
+    retention_enabled: true
+    delete_request_store: filesystem
+
+singleBinary:
+  replicas: 1
+  persistence:
+    enabled: true
+    size: 10Gi
+  nodeSelector:
+    workload: monitoring
+  tolerations:
+    - key: monitoring
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
+
+write:
+  replicas: 0
+
+read:
+  replicas: 0
+
+backend:
+  replicas: 0

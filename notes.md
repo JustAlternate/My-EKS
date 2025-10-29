@@ -166,4 +166,10 @@ To keep thing no too complicated i decided to go with option 1) (this is also wh
 While setting up prometheus, grafana and loki, i decided to use the very good helm chart that is provided by the kube-prometheus-stack from the prometheus community
 I also needed to add an EKS addon for block storage (ebs csi), so i updated my iac.
 
-In order to allow grafana to access cloudwatch source, i setup oidc, which was basically the same config i used for the CI
+in a first iteration i created a bash script to execute that would use helm to install the monitoring stack in my cluster.
+but this was tedious since im constantly applying and destroying my whole infrastructure
+so i decided to move the Observability stack install into terraaform by using the helm provider.
+
+In order to allow grafana to access cloudwatch source, i use oidc, which was basically the same config i used for the CI but with additional IAM role for grafana
+
+

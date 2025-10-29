@@ -38,11 +38,3 @@ resource "aws_cloudwatch_log_group" "eks_cluster" {
     Name = "${var.cluster_name}-eks-logs"
   }
 }
-resource "aws_eks_addon" "ebs-csi" {
-  cluster_name                = aws_eks_cluster.main.name
-  addon_name                  = "aws-ebs-csi-driver"
-  addon_version               = "v1.51.0-eksbuild.1"
-  service_account_role_arn    = aws_iam_role.aws_ebs_csi_driver.arn
-  resolve_conflicts_on_create = "OVERWRITE"
-  resolve_conflicts_on_update = "OVERWRITE"
-}

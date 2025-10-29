@@ -15,6 +15,17 @@ prometheus:
               storage: 20Gi
 
 grafana:
+  serviceAccount:
+    create: true
+    name: grafana
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::${AWS_ACCOUNT_ID}:role/grafana-cloudwatch-role
+  additionalDataSources:
+    - name: CloudWatch
+      type: cloudwatch
+      jsonData:
+        authType: default
+        defaultRegion: eu-west-3
   nodeSelector:
     workload: monitoring
   tolerations:
