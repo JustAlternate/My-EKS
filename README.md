@@ -24,7 +24,7 @@
 
 ### Observability
 - [X] Access the Kubernetes Dashboard (deployed using helm)
-- [X] Prometheus, Loki & Grafana (in a separate namespace and on another node group)
+- [X] Prometheus, Loki & Grafana (in a separate namespace and on another node group, deployed with terraform and the helm provider)
 - [ ] Add Metrics in each micro-services
 - [ ] Grafana dashboard for our EKS (CloudWatch)
 - [ ] Grafana dashboards for our micro-services
@@ -95,7 +95,7 @@ Get access to the cluster through kubectl on remote machine
 aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name justalternate-eks-cluster 
 ```
 
-### Access the kubernetes dashboard 
+### Install and Access the kubernetes dashboard 
 
 ![](./assets/kubernetes-dashboard.png)
 
@@ -117,20 +117,17 @@ Naviguate to the dashboard
 firefox https://localhost:8443
 ```
 
-### Install the Observability stack (prometheus, grafana, loki)
+### Access Grafana
 
 ```
-./services/observability-stack/deploy-and-access.sh
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
 ```
 
 ```
 firefox http://localhost:3000
 ```
 
-Connect to grafana using the password specified in `./services/observability-stack/prometheus-stack-values.yaml` which is : `admin`
-
-Btw I also use OIDC to allow grafana to connect to CloudWatch, and to install the amazon ebs csi driver in terraform
-
+Connect to grafana using the password specified in `./iac/observability-stack-config/prometheus-stack-values.yaml` which is : `admin`
 
 ### ECR
 
