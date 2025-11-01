@@ -9,6 +9,8 @@ prometheus:
         effect: NoSchedule
     storageSpec:
       volumeClaimTemplate:
+        metadata:
+          finalizers: []
         spec:
           resources:
             requests:
@@ -20,12 +22,6 @@ grafana:
     name: grafana
     annotations:
       eks.amazonaws.com/role-arn: arn:aws:iam::${AWS_ACCOUNT_ID}:role/grafana-cloudwatch-role
-  additionalDataSources:
-    - name: CloudWatch
-      type: cloudwatch
-      jsonData:
-        authType: default
-        defaultRegion: eu-west-3
   nodeSelector:
     workload: monitoring
   tolerations:
@@ -34,6 +30,33 @@ grafana:
       value: "true"
       effect: NoSchedule
   adminPassword: "admin"
+  additionalDataSources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+      isDefault: true
+      jsonData:
+        timeInterval: 30s
+        httpMethod: POST
+    
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.monitoring.svc.cluster.local
+      jsonData:
+        maxLines: 1000
+    
+    - name: CloudWatch
+      type: cloudwatch
+      jsonData:
+        authType: default
+        defaultRegion: eu-west-3
+  
+  persistence:
+    enabled: true
+    size: 5Gi
+    finalizers: []
 
 alertmanager:
   alertmanagerSpec:

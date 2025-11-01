@@ -4,6 +4,10 @@ loki:
     replication_factor: 1
   storage:
     type: filesystem
+    bucketNames:
+      chunks: loki-chunks
+      ruler: loki-ruler
+      admin: loki-admin
   
   schemaConfig:
     configs:
@@ -55,6 +59,7 @@ singleBinary:
   persistence:
     enabled: true
     size: 10Gi
+    finalizers: []
   nodeSelector:
     workload: monitoring
   tolerations:
@@ -71,3 +76,16 @@ read:
 
 backend:
   replicas: 0
+
+gateway:
+  enabled: true
+  replicas: 1
+  
+  nodeSelector:
+    workload: monitoring
+  
+  tolerations:
+    - key: monitoring
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
