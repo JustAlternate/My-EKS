@@ -23,6 +23,12 @@ provider "helm" {
       command     = "aws"
     }
   }
+  # Add timeout settings
+  repository_config_path = "${path.module}/.helm/repositories.yaml"
+  repository_cache       = "${path.module}/.helm"
+  
+  # Increase timeout
+  burst_limit = 100
 }
 
 # EBS CSI Driver addon for EKS
