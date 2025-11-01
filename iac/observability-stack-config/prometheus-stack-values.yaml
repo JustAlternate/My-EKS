@@ -1,0 +1,84 @@
+prometheus:
+  prometheusSpec:
+    nodeSelector:
+      workload: monitoring
+    tolerations:
+      - key: monitoring
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 20Gi
+
+grafana:
+  serviceAccount:
+    create: true
+    name: grafana
+  
+  adminPassword: "admin"
+  
+  nodeSelector:
+    workload: monitoring
+  
+  tolerations:
+    - key: monitoring
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
+  
+  sidecar:
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: false
+  
+  additionalDataSources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+      isDefault: true
+      jsonData:
+        timeInterval: 30s
+        httpMethod: POST
+    
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.monitoring.svc.cluster.local
+      isDefault: false
+      jsonData:
+        maxLines: 1000
+    
+    - name: CloudWatch
+      type: cloudwatch
+      isDefault: false
+      jsonData:
+        authType: default
+        defaultRegion: eu-west-3
+  
+  persistence:
+    enabled: true
+    size: 5Gi
+
+alertmanager:
+  alertmanagerSpec:
+    nodeSelector:
+      workload: monitoring
+    tolerations:
+      - key: monitoring
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+
+prometheusOperator:
+  nodeSelector:
+    workload: monitoring
+  tolerations:
+    - key: monitoring
+      operator: Equal
+      value: "true"
+      effect: NoSchedule

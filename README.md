@@ -3,10 +3,12 @@
 ## Features / TODO
 
 ### iac setup
+- [ ] Setup a global budget limit of $20
 - [x] Store tfstate in S3 bucket
 - [x] EKS (AWS managed K8S) + CloudWatch for it
 - [x] Managed Node Group multi AZ (only using tg4.small and 2 AZ configured) (arm64, Amazon linux AMI)
 - [x] Simple VPC and Security Group for EKS and the Node Group
+- [x] OIDC + IRSA everywhere
 
 ### Release engineering
 - [x] ECR (Managed Registry)
@@ -22,8 +24,8 @@
 
 ### Observability
 - [X] Access the Kubernetes Dashboard (deployed using helm)
-- [ ] Prometheus & Grafana
-- [ ] Add Metrics in each micro-services
+- [X] Prometheus, Loki & Grafana (in a separate namespace and on another node group, deployed with terraform and the helm provider)
+- [X] Add Metrics in each micro-services
 - [ ] Grafana dashboard for our EKS (CloudWatch)
 - [ ] Grafana dashboards for our micro-services
 - [ ] Grafana dashboard for our RDS (CloudWatch)
@@ -39,6 +41,7 @@
 - [ ] Script to make a sanity check of both micro-services (endpoints are 200, kubectl get pods shows RESTARTS=0 and Ready status true)
 - [ ] Script to simulate a DB/readiness failure (kubectl set env DB_URL=invalid -> rollout -> observe /readiness -> 503 -> pod state is not altered (no restart), and kubectl get endpoints is empty)
 - [ ] Script to simulate a liveness failure (kill the pod -> pod will be restarted, crashloopbackoff if failures are repeating)
+- [ ] Look for chaos monkey framework
 
 ### Automatic deployment
 - [ ] CD (Argo CD for deploying)
@@ -92,7 +95,7 @@ Get access to the cluster through kubectl on remote machine
 aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name justalternate-eks-cluster 
 ```
 
-### Access the kubernetes dashboard 
+### Install and Access the kubernetes dashboard 
 
 ![](./assets/kubernetes-dashboard.png)
 
@@ -113,6 +116,18 @@ Naviguate to the dashboard
 ```
 firefox https://localhost:8443
 ```
+
+### Access Grafana
+
+```
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
+```
+
+```
+firefox http://localhost:3000
+```
+
+Connect to grafana using the password specified in `./iac/observability-stack-config/prometheus-stack-values.yaml` which is : `admin`
 
 ### ECR
 

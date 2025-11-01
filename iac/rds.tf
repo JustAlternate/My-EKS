@@ -48,6 +48,8 @@ resource "aws_db_instance" "postgres" {
   skip_final_snapshot = true
   publicly_accessible = false
   deletion_protection = false
+  final_snapshot_identifier = null
+  delete_automated_backups  = true
 
   db_subnet_group_name    = aws_db_subnet_group.postgres.name
   vpc_security_group_ids  = [aws_security_group.postgres.id]

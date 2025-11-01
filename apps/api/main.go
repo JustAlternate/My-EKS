@@ -12,6 +12,59 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+var (
+	// GOLDEN SIGNAL: TRAFFIC
+	// Total number of requests received
+	reqsReceived = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "received_request_total",
+		Help: "The total number of received requests",
+	})
+
+	// Total number of requests processed successfully
+	reqsProcessed = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "processed_request_total",
+		Help: "The total number of processed requests",
+	})
+
+	// GOLDEN SIGNAL: ERRORS
+	// Total number of failed requests
+	reqsErrored = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "request_errors_total",
+		Help: "The total number of failed requests by error type",
+	}, []string{"error_type"})
+
+	// GOLDEN SIGNAL: LATENCY
+	// Request duration histogram
+	requestDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "http_request_duration_seconds",
+		Help:    "Duration of HTTP requests in seconds",
+		Buckets: prometheus.DefBuckets, // [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+	}, []string{"endpoint", "status"})
+
+	// Database operation duration
+	dbOperationDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "db_operation_duration_seconds",
+		Help:    "Duration of database operations in seconds",
+		Buckets: prometheus.DefBuckets,
+	}, []string{"operation"})
+
+	// GOLDEN SIGNAL: SATURATION
+	// Number of in-flight requests
+	inFlightRequests = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "http_requests_in_flight",
+		Help: "Current number of HTTP requests being processed",
+	})
+
+	// Database connection status
+	dbConnectionStatus = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "db_connection_status",
+		Help: "Database connection status (1 = connected, 0 = disconnected)",
+	})
 )
 
 type App struct {
@@ -33,14 +86,21 @@ func connect() (*pgx.Conn, error) {
 
 	conn, err := pgx.Connect(context.Background(), url)
 	if err != nil {
+		dbConnectionStatus.Set(0)
 		return nil, fmt.Errorf("unable to connect to database: %v", err)
 	}
 
+	dbConnectionStatus.Set(1)
 	log.Println("Successfully connected to database")
 	return conn, nil
 }
 
 func InitTableIfNotExist(conn *pgx.Conn) error {
+	start := time.Now()
+	defer func() {
+		dbOperationDuration.WithLabelValues("init_table").Observe(time.Since(start).Seconds())
+	}()
+
 	sql := `CREATE TABLE IF NOT EXISTS counters (
         id integer PRIMARY KEY,
         counter integer NOT NULL DEFAULT 0
@@ -68,6 +128,11 @@ func InitTableIfNotExist(conn *pgx.Conn) error {
 }
 
 func updateCounter(conn *pgx.Conn) error {
+	start := time.Now()
+	defer func() {
+		dbOperationDuration.WithLabelValues("update_counter").Observe(time.Since(start).Seconds())
+	}()
+
 	sql := `UPDATE counters SET counter = counter + 1 WHERE id = 0`
 	_, err := conn.Exec(context.Background(), sql)
 	if err != nil {
@@ -77,6 +142,11 @@ func updateCounter(conn *pgx.Conn) error {
 }
 
 func getCounter(conn *pgx.Conn) (int, error) {
+	start := time.Now()
+	defer func() {
+		dbOperationDuration.WithLabelValues("get_counter").Observe(time.Since(start).Seconds())
+	}()
+
 	var counter int
 	err := conn.QueryRow(context.Background(), "SELECT counter FROM counters WHERE id = 0").Scan(&counter)
 	if err != nil {
@@ -86,11 +156,27 @@ func getCounter(conn *pgx.Conn) (int, error) {
 }
 
 func (app *App) root(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	status := "200"
+
+	// Track in-flight requests (saturation)
+	inFlightRequests.Inc()
+	defer inFlightRequests.Dec()
+
+	// Track traffic
+	reqsReceived.Inc()
 	log.Printf("received call from: %v\n", r.RemoteAddr)
+
+	defer func() {
+		// Track latency
+		requestDuration.WithLabelValues("/", status).Observe(time.Since(start).Seconds())
+	}()
 
 	err := updateCounter(app.conn)
 	if err != nil {
 		log.Printf("Error updating counter: %v", err)
+		status = "500"
+		reqsErrored.WithLabelValues("db_update_failed").Inc()
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -98,6 +184,8 @@ func (app *App) root(w http.ResponseWriter, r *http.Request) {
 	counter, err := getCounter(app.conn)
 	if err != nil {
 		log.Printf("Error getting counter: %v", err)
+		status = "500"
+		reqsErrored.WithLabelValues("db_select_failed").Inc()
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -106,7 +194,9 @@ func (app *App) root(w http.ResponseWriter, r *http.Request) {
 	_, err = fmt.Fprintf(w, "%d", counter)
 	if err != nil {
 		log.Printf("Error when writting the counter in the response: %v", err)
+		reqsErrored.WithLabelValues("response_write_failed").Inc()
 	}
+	reqsProcessed.Inc()
 }
 
 var (
@@ -148,6 +238,8 @@ func main() {
 	}
 
 	log.Println("Database initialization complete")
+
+	http.Handle("/metrics", promhttp.Handler())
 
 	http.HandleFunc("/", app.root)
 
