@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-deployment 
+  name: api-deployment
   labels:
     app: api
 spec:
@@ -16,31 +16,11 @@ spec:
     spec:
       containers:
       - name: api
-        image: 149536499628.dkr.ecr.eu-west-3.amazonaws.com/api:init-rds
+        image: 149536499628.dkr.ecr.eu-west-3.amazonaws.com/api:monitoring-init
         imagePullPolicy: Always
         ports:
         - name: container-port
           containerPort: 3030
-
-      startupProbe: # Give a maximum of 20 seconds for startup
-        httpGet:
-          path: /liveness
-          port: container-port
-        failureThreshold: 2
-        periodSeconds: 10
-
-      livenessProbe: # Monitor every 5 secs the /liveness endpoint
-        httpGet:
-          path: /liveness
-          port: container-port
-        periodSeconds: 5
-
-      readinessProbe: # Monitor every 5 secs the /readiness endpoint
-        httpGet:
-          path: /readiness
-          port: container-port
-        periodSeconds: 5
-
         env:
         - name: DB_URL
           value: postgres.justalternate-eks-cluster.internal
@@ -50,3 +30,19 @@ spec:
           value: username
         - name: DB_PASSWORD
           value: password
+        startupProbe:
+          httpGet:
+            path: /liveness
+            port: container-port
+          failureThreshold: 2
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: container-port
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: container-port
+          periodSeconds: 5
