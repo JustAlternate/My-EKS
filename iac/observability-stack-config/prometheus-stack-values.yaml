@@ -1,7 +1,7 @@
 prometheus:
   prometheusSpec:
     nodeSelector:
-      workload: monitoring # Use the monitoring managed node group
+      workload: monitoring
     tolerations:
       - key: monitoring
         operator: Equal
@@ -9,8 +9,6 @@ prometheus:
         effect: NoSchedule
     storageSpec:
       volumeClaimTemplate:
-        metadata:
-          finalizers: []
         spec:
           resources:
             requests:
@@ -20,16 +18,23 @@ grafana:
   serviceAccount:
     create: true
     name: grafana
-    annotations:
-      eks.amazonaws.com/role-arn: arn:aws:iam::${AWS_ACCOUNT_ID}:role/grafana-cloudwatch-role
+  
+  adminPassword: "admin"
+  
   nodeSelector:
     workload: monitoring
+  
   tolerations:
     - key: monitoring
       operator: Equal
       value: "true"
       effect: NoSchedule
-  adminPassword: "admin"
+  
+  sidecar:
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: false
+  
   additionalDataSources:
     - name: Prometheus
       type: prometheus
@@ -44,11 +49,13 @@ grafana:
       type: loki
       access: proxy
       url: http://loki-gateway.monitoring.svc.cluster.local
+      isDefault: false
       jsonData:
         maxLines: 1000
     
     - name: CloudWatch
       type: cloudwatch
+      isDefault: false
       jsonData:
         authType: default
         defaultRegion: eu-west-3
@@ -56,7 +63,6 @@ grafana:
   persistence:
     enabled: true
     size: 5Gi
-    finalizers: []
 
 alertmanager:
   alertmanagerSpec:
