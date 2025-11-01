@@ -25,7 +25,7 @@
 ### Observability
 - [X] Access the Kubernetes Dashboard (deployed using helm)
 - [X] Prometheus, Loki & Grafana (in a separate namespace and on another node group, deployed with terraform and the helm provider)
-- [ ] Add Metrics in each micro-services
+- [X] Add Metrics in each micro-services
 - [ ] Grafana dashboard for our EKS (CloudWatch)
 - [ ] Grafana dashboards for our micro-services
 - [ ] Grafana dashboard for our RDS (CloudWatch)

@@ -40,10 +40,10 @@ resource "aws_eks_addon" "ebs-csi" {
   ]
 }
 
-# Create monitoring namespace
 resource "kubernetes_namespace" "monitoring" {
   metadata {
     name = "monitoring"
+    
     labels = {
       name = "monitoring"
     }
@@ -53,6 +53,10 @@ resource "kubernetes_namespace" "monitoring" {
     aws_eks_cluster.main,
     aws_eks_node_group.monitoring
   ]
+
+  timeouts {
+    delete = "5m"
+  }
 }
 
 resource "helm_release" "kube_prometheus_stack" {

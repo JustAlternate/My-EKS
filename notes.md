@@ -175,4 +175,20 @@ In order to allow grafana to access cloudwatch source, i use oidc, which was bas
 I've encountered issues when trying to destroy the infrastructure with `terraform destroy` due to resource dependencies. 
 I added some best practices forced deletion dependencies and lifecycle.
 
+I had a lot of different issues i encountered when trying to deploy using terraform my Observability stack by using the 
+already packages prometheus-grafana helm chart.
+
+most particularly because the yaml for config the prometheus stack was hard to debug because i had to wait the terraform apply and then monitor by using 
+kubectl get logs while it was applying.
+
+I then added golden signals for each micro services
+- Latency, saturation, errors, traffic
+
+for the api service, its api and the database read and write it does.
+for the web-server service, its api and the http get it do.
+
+obviously i used the prometheus golang package to do that and added a /metric endpoint for each micro service
+
+next step is to make all of this accessible through grafana.
+
 
