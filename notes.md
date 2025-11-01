@@ -164,12 +164,15 @@ From this point of view there is multiple way to get this monitoring stack up an
 To keep thing no too complicated i decided to go with option 1) (this is also what my company does btw)
 
 While setting up prometheus, grafana and loki, i decided to use the very good helm chart that is provided by the kube-prometheus-stack from the prometheus community
-I also needed to add an EKS addon for block storage (ebs csi), so i updated my iac.
+I also needed to add an EKS addon for persistent storage for grafana, prometheus, loki (ebs csi), so i updated my iac.
 
 in a first iteration i created a bash script to execute that would use helm to install the monitoring stack in my cluster.
 but this was tedious since im constantly applying and destroying my whole infrastructure
 so i decided to move the Observability stack install into terraaform by using the helm provider.
 
 In order to allow grafana to access cloudwatch source, i use oidc, which was basically the same config i used for the CI but with additional IAM role for grafana
+
+I've encountered issues when trying to destroy the infrastructure with `terraform destroy` due to resource dependencies. 
+I added some best practices forced deletion dependencies and lifecycle.
 
 
