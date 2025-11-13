@@ -14,4 +14,4 @@ sleep 10
 kubectl delete pvc --all -n monitoring || true
 
 echo "Tofu destroy..."
-tofu -chdir ./iac destroy -auto-approve
+tofu -chdir=./iac destroy -auto-approve
