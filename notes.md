@@ -191,4 +191,36 @@ obviously i used the prometheus golang package to do that and added a /metric en
 
 next step is to make all of this accessible through grafana.
 
+added a "permanent" folder in the iac folder in which i added a backend.tf with a new key key    = "eks-infra-budget.tfstate" and a main.tf in
+which i defined a global budget 
+
+resource "aws_budgets_budget" "cost" {
+  budget_type  = "COST"
+  limit_amount = "20"
+  limit_unit   = "USD"
+  time_unit    = "MONTHLY"
+}
+
+so that i dont destroy this budget when i destroy everything that is in ./iac
+
+├── iac
+│   ├── backend.tf
+│   ├── ecr.tf
+│   ├── iam.tf
+│   ├── main.tf
+│   ├── mng.tf
+│   ├── monitoring.tf
+│   ├── oidc.tf
+│   ├── output.tf
+│   ├── permanent
+│   │   ├── backend.tf
+│   │   ├── main.tf
+│   │   └── provider.tf
+│   ├── provider.tf
+│   ├── rds.tf
+│   ├── sg.tf
+│   ├── variables.tf
+│   └── vpc.tf
+
+
 

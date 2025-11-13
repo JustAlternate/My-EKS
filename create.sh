@@ -2,7 +2,7 @@
 set -e
 
 echo "Tofu apply..."
-tofu -chdir ./iac apply -auto-approve
+tofu -chdir=./iac apply -auto-approve
 
 echo "Installing observability stack..."
 aws eks update-kubeconfig --region "${AWS_DEFAULT_REGION}" --name justalternate-eks-cluster 
@@ -21,7 +21,7 @@ helm upgrade --install kube-prometheus-stack \
   prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
   --version 65.0.0 \
-  --values iac/observability-stack-config/prometheus-stack-values.yaml \
+  --values observability-stack-config/prometheus-stack-values.yaml \
   --set grafana.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="arn:aws:iam::${AWS_ACCOUNT_ID}:role/grafana-cloudwatch-role" \
   --wait \
   --timeout 10m
@@ -30,7 +30,7 @@ helm upgrade --install loki \
   grafana/loki \
   --namespace monitoring \
   --version 6.6.0 \
-  --values iac/observability-stack-config/loki-values.yaml \
+  --values observability-stack-config/loki-values.yaml \
   --wait \
   --timeout 10m
 
@@ -38,7 +38,7 @@ helm upgrade --install promtail \
   grafana/promtail \
   --namespace monitoring \
   --version 6.16.0 \
-  --values iac/observability-stack-config/promtail-values.yaml \
+  --values observability-stack-config/promtail-values.yaml \
   --wait \
   --timeout 5m
 
