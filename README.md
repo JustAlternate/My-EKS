@@ -34,10 +34,10 @@ Simplified V1 architecture diagram
 - [X] Access the Kubernetes Dashboard (deployed using helm)
 - [X] Prometheus, Loki & Grafana (in a separate namespace and on another node group, deployed with helm)
 - [X] Add Metrics in each micro-services
-- [X] Grafana dashboard for our EKS (CloudWatch)
-- [ ] Grafana dashboards for our micro-services
 - [X] Grafana dashboard for our RDS (CloudWatch)
 - [X] Node Exporter for our instances
+- [ ] Grafana dashboard for our micro-services metrics
+- [ ] Grafana dashboard for our micro-services logs
 
 ### Scaling and K8S config
 - [ ] Learn, setup and configure HPA (HorizontalPodAutoscaler)
