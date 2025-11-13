@@ -3,7 +3,7 @@
 ## Features / TODO
 
 ### iac setup
-- [ ] Setup a global budget limit of $20
+- [x] Setup a global budget limit of $20
 - [x] Store tfstate in S3 bucket
 - [x] EKS (AWS managed K8S) + CloudWatch for it
 - [x] Managed Node Group multi AZ (only using tg4.small and 2 AZ configured) (arm64, Amazon linux AMI)
