@@ -223,4 +223,64 @@ so that i dont destroy this budget when i destroy everything that is in ./iac
 │   └── vpc.tf
 
 
+For the node Exporter dashboard i used the preinstalled dashboard from the helm chart.
 
+I found an insane dashboard for monitoring RDS : https://github.com/qonto/prometheus-rds-exporter
+
+"""
+Prometheus RDS exporter
+
+Are you ready to take your AWS RDS monitoring to the next level? Say hello to prometheus-rds-exporter, your ultimate solution for comprehensive, real-time insights into your Amazon RDS instances!
+
+Built by SRE Engineers, designed for production: Meticulously crafted by a team of Site Reliability Engineers with years of hands-on experience in managing RDS production systems. Trust in their expertise to supercharge your monitoring.
+
+It collects key metrics about:
+
+    Hardware resource usage
+    Underlying EC2 instance's hard limits
+    Pending AWS RDS maintenance operations
+    Pending modifications
+    Logs size
+    RDS quota usage information
+"""
+
+but the price to setting it up was too high
+
+so I simply used one dashboard i found on https://github.com/monitoringartist/grafana-aws-cloudwatch-dashboard
+
+To install my custom RDS dashboard automatically, i create a config map in my create.sh script to store the dashboard
+configmap that will then be read by the helm chart to push the additional dashboards
+
+```
+grafana:
+  sidecar:
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: false
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      folder: /var/lib/grafana/dashboards/default
+
+  dashboardsConfigMaps:
+    my-RDS-dashboard: my-RDS-dashboard-cm
+```
+
+create.sh:
+```
+...
+echo "Creating configMap for my injecting to grafana my custom dashboards"
+kubectl create configmap my-RDS-dashboard-cm \
+  --from-file=my-dashboard.json=./dashboards/RDS.json \
+  -n monitoring
+kubectl label configmap my-RDS-dashboard-cm grafana_dashboard=1 -n monitoring
+
+echo "Using helm to install Grafana, prometheus, loki, promtail and alertmanager"
+
+helm upgrade --install kube-prometheus-stack \
+  prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --version 65.0.0 \
+  --values observability-stack-config/prometheus-stack-values.yaml \
+...
+```

@@ -34,6 +34,13 @@ grafana:
     datasources:
       enabled: true
       defaultDatasourceEnabled: false
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      folder: /var/lib/grafana/dashboards/default
+
+  dashboardsConfigMaps:
+    my-rds-dashboard: my-rds-dashboard-cm
   
   additionalDataSources:
     - name: Prometheus

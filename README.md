@@ -1,5 +1,9 @@
 # My AWS infra
 
+Simplified V1 architecture diagram
+
+![](./assets/archiv1.png)
+
 ## Features / TODO
 
 ### iac setup
@@ -16,6 +20,10 @@
 - [x] CI for our Golang micro-services (lint, format, release, build on arm64 runners and push images on ECR)
 - [x] Proper release when rebasing on master & push the release tag on ECR for each services 
 
+![](./assets/github-ci.png)
+
+![](./assets/tf-plan-pr.png)
+
 ### Micro-services and infra setup
 - [x] RDS (Simple single RDS that will store a counter and accessible from our micro-services running in EKS) (inside a private subnet with a private Route53 DNS)
 - [x] 2 micro-services deployable (one that expose a public web server and send a request to the second one that update the counter in a RDS)
@@ -24,12 +32,12 @@
 
 ### Observability
 - [X] Access the Kubernetes Dashboard (deployed using helm)
-- [X] Prometheus, Loki & Grafana (in a separate namespace and on another node group, deployed with terraform and the helm provider)
+- [X] Prometheus, Loki & Grafana (in a separate namespace and on another node group, deployed with helm)
 - [X] Add Metrics in each micro-services
-- [ ] Grafana dashboard for our EKS (CloudWatch)
+- [X] Grafana dashboard for our EKS (CloudWatch)
 - [ ] Grafana dashboards for our micro-services
-- [ ] Grafana dashboard for our RDS (CloudWatch)
-- [ ] Node Exporter for our instances
+- [X] Grafana dashboard for our RDS (CloudWatch)
+- [X] Node Exporter for our instances
 
 ### Scaling and K8S config
 - [ ] Learn, setup and configure HPA (HorizontalPodAutoscaler)
@@ -90,6 +98,12 @@ tofu -chdir=iac plan
 tofu -chdir=iac apply
 ```
 
+or for also setting up the monitoring stack :
+
+```
+./create.sh
+```
+
 Get access to the cluster through kubectl on remote machine
 ```
 aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name justalternate-eks-cluster 
@@ -128,6 +142,18 @@ firefox http://localhost:3000
 ```
 
 Connect to grafana using the password specified in `./iac/observability-stack-config/prometheus-stack-values.yaml` which is : `admin`
+
+Here are some dashboards available:
+
+#### Node Exporter
+
+![](./assets/node-exporter.png)
+
+#### RDS
+![](./assets/rds-dashboard.png)
+
+#### EC2
+![](./assets/grafana-cloudwatch-ec2.png)
 
 ### ECR
 

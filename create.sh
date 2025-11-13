@@ -13,9 +13,15 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 
-
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
+echo "Creating configMap for my injecting to grafana my custom dashboards"
+kubectl create configmap my-rds-dashboard-cm \
+  --from-file=my-dashboard.json=./observability-stack-config/dashboards/RDS.json \
+  -n monitoring
+kubectl label configmap my-rds-dashboard-cm grafana_dashboard=1 -n monitoring
+
+echo "Using helm to install Grafana, prometheus, loki, promtail and alertmanager"
 
 helm upgrade --install kube-prometheus-stack \
   prometheus-community/kube-prometheus-stack \
@@ -41,8 +47,6 @@ helm upgrade --install promtail \
   --values observability-stack-config/promtail-values.yaml \
   --wait \
   --timeout 5m
-
-kubectl get pods -n monitoring
 
 echo "Access Grafana:"
 echo "===="
