@@ -225,3 +225,11 @@ add you service in the `.github/workflows/build-push-dev.yml` and the `.github/w
 kubectl apply -f ./services/api
 kubectl apply -f ./services/web-server
 ```
+
+```
+kubectl get services
+```
+
+```
+firefox http://<url>:8080/
+```

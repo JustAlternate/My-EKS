@@ -1,5 +1,8 @@
 prometheus:
   prometheusSpec:
+    # Enable Prometheus to discover ServiceMonitors/PodMonitors across all namespaces
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
     nodeSelector:
       workload: monitoring
     tolerations:

@@ -37,3 +37,8 @@ output "postgres_connection_info" {
     username = aws_db_instance.postgres.username
   }
 }
+
+output "github_actions_role_arn" {
+  description = "ARN of the GitHub Actions IAM role"
+  value       = aws_iam_role.github_actions_role.arn
+}
