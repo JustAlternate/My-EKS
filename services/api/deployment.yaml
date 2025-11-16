@@ -13,13 +13,14 @@ spec:
     metadata:
       labels:
         app: api
+        monitoring: http-metrics
     spec:
       containers:
       - name: api
-        image: 149536499628.dkr.ecr.eu-west-3.amazonaws.com/api:latest
+        image: 149536499628.dkr.ecr.eu-west-3.amazonaws.com/api:dashboard-for-microservices
         imagePullPolicy: Always
         ports:
-        - name: container-port
+        - name: web
           containerPort: 3030
         env:
         - name: DB_URL
@@ -33,16 +34,16 @@ spec:
         startupProbe:
           httpGet:
             path: /liveness
-            port: container-port
+            port: web
           failureThreshold: 2
           periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /liveness
-            port: container-port
+            port: web
           periodSeconds: 5
         readinessProbe:
           httpGet:
             path: /readiness
-            port: container-port
+            port: web
           periodSeconds: 5

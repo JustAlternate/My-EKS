@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web-server-deployment 
+  name: web-server-deployment
   labels:
     app: web-server
 spec:
@@ -16,30 +16,27 @@ spec:
     spec:
       containers:
       - name: web-server
-        image: 149536499628.dkr.ecr.eu-west-3.amazonaws.com/web-server:latest
+        image: 149536499628.dkr.ecr.eu-west-3.amazonaws.com/web-server:dashboard-for-microservices
         imagePullPolicy: Always
         ports:
-        - name: container-port
+        - name: web
           containerPort: 8080
         env:
         - name: API_URL
           value: http://api-service:3030
-
-        startupProbe: # Give a maximum of 20 seconds for startup
+        startupProbe:
           httpGet:
             path: /liveness
-            port: container-port
+            port: web
           failureThreshold: 2
           periodSeconds: 10
-
-        livenessProbe: # Monitor every 5 secs the /liveness endpoint
+        livenessProbe:
           httpGet:
             path: /liveness
-            port: container-port
+            port: web
           periodSeconds: 5
-
-        readinessProbe: # Monitor every 5 secs the /readiness endpoint
+        readinessProbe:
           httpGet:
             path: /readiness
-            port: container-port
+            port: web
           periodSeconds: 5

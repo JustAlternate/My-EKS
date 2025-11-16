@@ -19,7 +19,7 @@ resource "aws_iam_role" "github_actions_role" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:JustAlternate/My-EKS:*"
+            "token.actions.githubusercontent.com:sub" = "repo:JustAlternate/My-Managed-Kubernetes:*"
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
         }
