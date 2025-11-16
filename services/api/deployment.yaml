@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: 149536499628.dkr.ecr.eu-west-3.amazonaws.com/api:monitoring-init
+        image: 149536499628.dkr.ecr.eu-west-3.amazonaws.com/api:latest
         imagePullPolicy: Always
         ports:
         - name: container-port
