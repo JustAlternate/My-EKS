@@ -261,7 +261,6 @@ func instrumentHandler(endpoint string, handler http.Handler) http.Handler {
 		inFlightRequests.Inc()
 		defer inFlightRequests.Dec()
 
-		// Create a response writer wrapper to capture status code
 		wrapped := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 
 		handler.ServeHTTP(wrapped, r)

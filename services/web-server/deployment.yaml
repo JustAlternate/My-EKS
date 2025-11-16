@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: web-server
-        image: 149536499628.dkr.ecr.eu-west-3.amazonaws.com/web-server:monitoring-init
+        image: 149536499628.dkr.ecr.eu-west-3.amazonaws.com/web-server:latest
         imagePullPolicy: Always
         ports:
         - name: container-port

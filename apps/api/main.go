@@ -259,7 +259,6 @@ func main() {
 	ready = false
 	mu.Unlock()
 
-	// Graceful shutdown with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
