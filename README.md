@@ -32,12 +32,12 @@ Simplified V1 architecture diagram
 - [x] Healthchecks in the micro-services (liveness, readiness & startup probes)
 
 ### Observability
-- [X] Access the Kubernetes Dashboard (deployed using helm)
-- [X] Prometheus, Loki & Grafana (in a separate namespace and on another node group, deployed with helm)
-- [X] Add Metrics in each micro-services
-- [X] Grafana dashboard for our RDS (CloudWatch)
-- [X] Node Exporter for our instances
-- [ ] Grafana dashboard for our micro-services metrics
+- [x] Access the Kubernetes Dashboard (deployed using helm)
+- [x] Prometheus, Loki & Grafana (in a separate namespace and on another node group, deployed with helm)
+- [x] Add Metrics in each micro-services
+- [x] Grafana dashboard for our RDS (CloudWatch)
+- [x] Node Exporter for our instances
+- [x] Grafana dashboard for our micro-services metrics
 - [ ] Grafana dashboard for our micro-services logs
 
 ### Security
@@ -61,10 +61,9 @@ Simplified V1 architecture diagram
 - [ ] CD (Automatic rollback with Argo Rollout)
 
 ### SRE stuff
-- [ ] Monitor golden signals in Grafana 
+- [x] Monitor golden signals in Grafana
 - [ ] Define clear SLA / SLI / SLO for our Application feature
 - [ ] Monitor our SLI / SLO in Grafana
-
 
 ### Docs
 - [ ] Architecture Diagram

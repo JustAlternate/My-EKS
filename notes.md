@@ -274,6 +274,21 @@ NOW I HAVE MY APPS METRICS IN GRAFANA !!!!!
 
 Time to build dashboad for it...
 
+DONE ! 
+I have built a "micro-services" dashboard taking a variable "container" that will be either "web-server" or "api" and that monitor : 
+- Traffic trhoughput (req/s) as a gauge
+- Success rate % as a gauge
+- Error rate % as a gauge
+- Current active request as a gauge
+- request rate (received / processed) as a timeseries chart
+- error rate by type as a timeseries chart
+- P95 latency as timeseries
+- P50 latency as timeseries
+
+The dashboard is exported in json at ./observability-stack-config/dashboards/microservices.json
+and is loaded as a config map in kubernetes to be pushed in grafana each time I deploy the monitoring stack
+
+===
 Every LLM i sent my note to, told me that my project was nice but every time
 they are telling me that the very big gap is **security** because a senior SRE
 value **security** heavily. When i started this project I wanted to go fast and was planning
@@ -282,3 +297,5 @@ then I heard of oauth2 and now about External Secrets Operator. The more I disco
 more passionating it becomes!
 
 In an effort to really build this "production grade ready infrastructure" **I WILL NOT skip security**.
+
+
