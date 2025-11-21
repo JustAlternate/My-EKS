@@ -1,7 +1,10 @@
 # My AWS infra
 
-Simplified V1 architecture diagram
+This project is a personal infrastructure on AWS I use to implement the best practices I learned from SRE, Platform Engineering and Cloud Architecture culture.
 
+The idea is to create my "production grade" ready infrastructure for micro-services
+
+Simplified V1 architecture diagram
 ![](./assets/archiv1.png)
 
 ## Features / TODO
