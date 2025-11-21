@@ -21,6 +21,11 @@ kubectl create configmap my-rds-dashboard-cm \
   -n monitoring
 kubectl label configmap my-rds-dashboard-cm grafana_dashboard=1 -n monitoring
 
+kubectl create configmap my-microservices-dashboard-cm \
+  --from-file=my-dashboard.json=./observability-stack-config/dashboards/microservices.json \
+  -n monitoring
+kubectl label configmap my-microservices-dashboard-cm grafana_dashboard=1 -n monitoring
+
 echo "Using helm to install Grafana, prometheus, loki, promtail and alertmanager"
 
 helm upgrade --install kube-prometheus-stack \

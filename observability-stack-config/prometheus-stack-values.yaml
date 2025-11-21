@@ -44,6 +44,7 @@ grafana:
 
   dashboardsConfigMaps:
     my-rds-dashboard: my-rds-dashboard-cm
+    my-microservices-dashboard: my-microservices-dashboard-cm
   
   additionalDataSources:
     - name: Prometheus
