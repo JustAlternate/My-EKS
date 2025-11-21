@@ -46,7 +46,7 @@ resource "aws_eks_node_group" "main" {
 resource "aws_eks_node_group" "monitoring" {
   cluster_name    = aws_eks_cluster.main.name
   node_group_name = "${var.cluster_name}-monitoring-nodes"
-  node_role_arn   = aws_iam_role.eks_nodes.arn  # Can reuse same role
+  node_role_arn   = aws_iam_role.eks_nodes.arn # Can reuse same role
   subnet_ids      = module.vpc.private_subnets
 
   scaling_config {
@@ -59,7 +59,7 @@ resource "aws_eks_node_group" "monitoring" {
     max_unavailable = 1
   }
 
-  instance_types = ["t4g.medium"]  # ARM instance, enough for Prometheus/Grafana
+  instance_types = ["t4g.medium"] # ARM instance, enough for Prometheus/Grafana
   ami_type       = "AL2023_ARM_64_STANDARD"
 
   labels = {

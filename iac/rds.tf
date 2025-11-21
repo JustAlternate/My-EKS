@@ -14,9 +14,9 @@ resource "aws_security_group" "postgres" {
   vpc_id      = module.vpc.vpc_id
 
   ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
+    from_port = 5432
+    to_port   = 5432
+    protocol  = "tcp"
     security_groups = [
       aws_security_group.eks_nodes.id,
       aws_eks_cluster.main.vpc_config[0].cluster_security_group_id # Allow this sg that is automatically created by AWS, else it will not work.
@@ -45,9 +45,9 @@ resource "aws_db_instance" "postgres" {
   username          = "username"
   password          = "password"
 
-  skip_final_snapshot = true
-  publicly_accessible = false
-  deletion_protection = false
+  skip_final_snapshot       = true
+  publicly_accessible       = false
+  deletion_protection       = false
   final_snapshot_identifier = null
   delete_automated_backups  = true
 

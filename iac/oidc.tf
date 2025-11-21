@@ -44,12 +44,12 @@ resource "aws_iam_openid_connect_provider" "eks_oidc" {
 resource "aws_iam_policy" "grafana_cloudwatch" {
   name        = "GrafanaCloudWatchAccess"
   description = "Permet à Grafana de lire les métriques CloudWatch"
-  policy      = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "cloudwatch:GetMetricData",
           "cloudwatch:GetMetricStatistics",
           "cloudwatch:ListMetrics",
@@ -66,11 +66,11 @@ resource "aws_iam_role" "grafana_cloudwatch" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect    = "Allow"
+        Effect = "Allow"
         Principal = {
           Federated = aws_iam_openid_connect_provider.eks_oidc.arn
         }
-        Action    = "sts:AssumeRoleWithWebIdentity"
+        Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
             "${replace(aws_eks_cluster.main.identity.0.oidc.0.issuer, "https://", "")}:sub" = "system:serviceaccount:monitoring:grafana"
