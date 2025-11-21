@@ -150,6 +150,9 @@ Connect to grafana using the password specified in `./iac/observability-stack-co
 
 Here are some dashboards available:
 
+#### Micro-services
+![](./assets/microservices-dashboard.png)
+
 #### Node Exporter
 
 ![](./assets/node-exporter.png)
