@@ -1,21 +1,19 @@
-FROM cgr.dev/chainguard/go:latest AS builder
+FROM --platform=$BUILDPLATFORM cgr.dev/chainguard/go:latest AS builder
 
 WORKDIR /app
+
+ARG TARGETOS
+ARG TARGETARCH
 
 COPY go.mod go.sum ./
-
 COPY *.go ./
 
-RUN CGO_ENABLED=0 go build -o api
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o api
 
-# https://images.chainguard.dev/directory/image/static/versions 
+# https://images.chainguard.dev/directory/image/static/versions
 # ultra minimal image for running static binaries in production
 FROM cgr.dev/chainguard/static:latest AS runner
-
 WORKDIR /app
-
 COPY --from=builder /app/api /usr/bin/api
-
 EXPOSE 3030
-
 CMD ["/usr/bin/api"]
