@@ -43,7 +43,6 @@ Here are things I want to do properly in this project :
 
 Here are the things i didnt focused too much (But would have been great to do if i had time for it):
 
-- Security
 - Compliance
 - FinOps
 - Secrets management
@@ -143,8 +142,7 @@ this was a very big trap that took me hours to understand !!!
   username          = "username"
   password          = "password")
 
-(security is not a priority for this project..., i know thats bad...)
-
+(i will rework that latter on by implementing external secrets operator with aws secrets manager)
 
 And now finnaly I have my 2 apps that can communicate between each other on my EKS builded by my CI pushed to my ECR and with a RDS that is working !
 
@@ -202,6 +200,7 @@ resource "aws_budgets_budget" "cost" {
 }
 
 so that i dont destroy this budget when i destroy everything that is in ./iac
+I think thats not the best approach, but that will do.
 
 ├── iac
 │   ├── backend.tf
@@ -227,28 +226,11 @@ For the node Exporter dashboard i used the preinstalled dashboard from the helm 
 
 I found an insane dashboard for monitoring RDS : https://github.com/qonto/prometheus-rds-exporter
 
-"""
-Prometheus RDS exporter
-
-Are you ready to take your AWS RDS monitoring to the next level? Say hello to prometheus-rds-exporter, your ultimate solution for comprehensive, real-time insights into your Amazon RDS instances!
-
-Built by SRE Engineers, designed for production: Meticulously crafted by a team of Site Reliability Engineers with years of hands-on experience in managing RDS production systems. Trust in their expertise to supercharge your monitoring.
-
-It collects key metrics about:
-
-    Hardware resource usage
-    Underlying EC2 instance's hard limits
-    Pending AWS RDS maintenance operations
-    Pending modifications
-    Logs size
-    RDS quota usage information
-"""
-
 but the price to setting it up was too high
 
 so I simply used one dashboard i found on https://github.com/monitoringartist/grafana-aws-cloudwatch-dashboard
 
-To install my custom RDS dashboard automatically, i create a config map in my create.sh script to store the dashboard
+To install my custom RDS dashboard automatically, i created a config map in my create.sh script to store the dashboard
 configmap that will then be read by the helm chart to push the additional dashboards
 
 ```
@@ -284,3 +266,19 @@ helm upgrade --install kube-prometheus-stack \
   --values observability-stack-config/prometheus-stack-values.yaml \
 ...
 ```
+
+I also had to create a service monitor to monitor my apps that are on the default namespace
+since all my Observability stack is on the "monitoring" namespace in my EKS
+
+NOW I HAVE MY APPS METRICS IN GRAFANA !!!!!
+
+Time to build dashboad for it...
+
+Every LLM i sent my note to, told me that my project was nice but every time
+they are telling me that the very big gap is **security** because a senior SRE
+value **security** heavily. When i started this project I wanted to go fast and was planning
+to not deal with security at all. Then I discovered Vault at iAdvize, then I discovered OIDC and implemented it in github actions to reach AWS,
+then I heard of oauth2 and now about External Secrets Operator. The more I discover things in security, the
+more passionating it becomes!
+
+In an effort to really build this "production grade ready infrastructure" **I WILL NOT skip security**.
