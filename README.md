@@ -9,10 +9,11 @@ Simplified V1 architecture diagram
 ### iac setup
 - [x] Setup a global budget limit of $20
 - [x] Store tfstate in S3 bucket
-- [x] EKS (AWS managed K8S) + CloudWatch for it
+- [x] EKS (AWS managed K8S) 
+- [x] CloudWatch and OIDC access for EKS from CloudWatch
 - [x] Managed Node Group multi AZ (only using tg4.small and 2 AZ configured) (arm64, Amazon linux AMI)
 - [x] Simple VPC and Security Group for EKS and the Node Group
-- [x] OIDC + IRSA everywhere
+- [x] OIDC for AWS access from GitHub Actions
 
 ### Release engineering
 - [x] ECR (Managed Registry)
@@ -38,6 +39,10 @@ Simplified V1 architecture diagram
 - [X] Node Exporter for our instances
 - [ ] Grafana dashboard for our micro-services metrics
 - [ ] Grafana dashboard for our micro-services logs
+
+### Security
+- [ ] Get rid of hardcoded password for RDS by using External Secrets Operator with AWS Secrets Manager
+- [ ] IAM roles for service account (IRSA) on all pods to access S3
 
 ### Scaling and K8S config
 - [ ] Learn, setup and configure HPA (HorizontalPodAutoscaler)
