@@ -35,6 +35,27 @@ resource "aws_security_group" "postgres" {
   }
 }
 
+resource "random_password" "password" {
+  length  = 16
+  special = false
+}
+
+resource "aws_secretsmanager_secret" "rds-secret" {
+  name = "my_postgres"
+  force_overwrite_replica_secret = true
+  recovery_window_in_days = 0
+}
+
+resource "aws_secretsmanager_secret_version" "rds-secret-version" {
+  secret_id     = aws_secretsmanager_secret.rds-secret.id
+  secret_string = random_password.password.result 
+}
+
+resource "aws_secretsmanager_secret_policy" "eso_shared_secret_policy" {
+  secret_arn = aws_secretsmanager_secret.rds-secret.arn
+  policy     = data.aws_iam_policy_document.eso.json
+}
+
 resource "aws_db_instance" "postgres" {
   identifier        = "${var.cluster_name}-postgres"
   allocated_storage = 5
@@ -43,7 +64,7 @@ resource "aws_db_instance" "postgres" {
   engine_version    = "17.6"
   instance_class    = "db.t4g.micro"
   username          = "username"
-  password          = "password"
+  password          = random_password.password.result
 
   skip_final_snapshot       = true
   publicly_accessible       = false
