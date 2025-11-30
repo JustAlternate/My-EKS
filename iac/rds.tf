@@ -41,19 +41,20 @@ resource "random_password" "password" {
 }
 
 resource "aws_secretsmanager_secret" "rds-secret" {
-  name = "my_postgres"
+  name                           = "my_postgres"
   force_overwrite_replica_secret = true
-  recovery_window_in_days = 0
+  recovery_window_in_days        = 0
 }
 
 resource "aws_secretsmanager_secret_version" "rds-secret-version" {
-  secret_id     = aws_secretsmanager_secret.rds-secret.id
-  secret_string = random_password.password.result 
-}
-
-resource "aws_secretsmanager_secret_policy" "eso_shared_secret_policy" {
-  secret_arn = aws_secretsmanager_secret.rds-secret.arn
-  policy     = data.aws_iam_policy_document.eso.json
+  secret_id = aws_secretsmanager_secret.rds-secret.id
+  secret_string = jsonencode({
+    password = random_password.password.result
+    username = aws_db_instance.postgres.username
+    host     = aws_db_instance.postgres.address
+    port     = aws_db_instance.postgres.port
+    dbname   = aws_db_instance.postgres.db_name
+  })
 }
 
 resource "aws_db_instance" "postgres" {
@@ -63,7 +64,7 @@ resource "aws_db_instance" "postgres" {
   engine            = "postgres" # We will not use Aurora so we can create our own backup and restoration strategie
   engine_version    = "17.6"
   instance_class    = "db.t4g.micro"
-  username          = "username"
+  username          = "master"
   password          = random_password.password.result
 
   skip_final_snapshot       = true
@@ -81,26 +82,4 @@ resource "aws_db_instance" "postgres" {
   tags = {
     Name = "${var.cluster_name}-postgres"
   }
-}
-
-# Private hosted zone for internal DNS
-resource "aws_route53_zone" "private" {
-  name = "${var.cluster_name}.internal"
-
-  vpc {
-    vpc_id = module.vpc.vpc_id
-  }
-
-  tags = {
-    Name = "${var.cluster_name}-private-zone"
-  }
-}
-
-# CNAME record pointing to RDS endpoint
-resource "aws_route53_record" "postgres" {
-  zone_id = aws_route53_zone.private.zone_id
-  name    = "postgres.${var.cluster_name}.internal"
-  type    = "CNAME"
-  ttl     = 300
-  records = [aws_db_instance.postgres.address]
 }

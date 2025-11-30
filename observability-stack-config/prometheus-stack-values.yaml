@@ -13,9 +13,10 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
+          storageClassName: gp2
           resources:
             requests:
-              storage: 20Gi
+              storage: 10Gi
 
 grafana:
   serviceAccount:
@@ -73,6 +74,7 @@ grafana:
   
   persistence:
     enabled: true
+    storageClassName: gp2
     size: 5Gi
 
 alertmanager:
