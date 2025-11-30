@@ -44,8 +44,8 @@ Simplified V1 architecture diagram
 - [ ] Grafana dashboard for our micro-services logs
 
 ### Security
-- [ ] Get rid of hardcoded password for RDS by using External Secrets Operator with AWS Secrets Manager
-- [ ] IAM roles for service account (IRSA) on all pods to access S3
+- [x] Get rid of hardcoded password for RDS by using External Secrets Operator with AWS Secrets Manager
+- [x] IAM roles for service account (IRSA) ONLY FOR ESO (namespace "external-secrets")
 
 ### Scaling and K8S config
 - [ ] Learn, setup and configure HPA (HorizontalPodAutoscaler)
@@ -75,6 +75,7 @@ Simplified V1 architecture diagram
 
 ## Bonus
 
+- [ ] Vibe code some frontend for that poor web-server micro service
 - [ ] Use spot in our Managed Node Group (using a custom launch template)
 - [ ] Replace default ELB when creating a service type load balancer to a ALB
 - [ ] RDS Backup & Restore (Velero ?)

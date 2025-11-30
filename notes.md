@@ -298,4 +298,33 @@ more passionating it becomes!
 
 In an effort to really build this "production grade ready infrastructure" **I WILL NOT skip security**.
 
+===
+Installing ESO and AWS secrets manager for my RDS
+i started by generating a random_password in terraform for my RDS
+
+then I stored that password in AWS secret manager
+
+```
+resource "aws_secretsmanager_secret_version" "rds-secret-version" {
+  secret_id     = aws_secretsmanager_secret.rds-secret.id
+  secret_string = jsonencode({
+    password = random_password.password.result
+    username = aws_db_instance.postgres.username
+    host     = aws_db_instance.postgres.address
+    port     = aws_db_instance.postgres.port
+    dbname   = aws_db_instance.postgres.db_name
+  })
+}
+```
+
+also since i now added the address of my postgres in my secret i will be able to remove that private dns record
+
+After that I created IAM roles and policy for ESO as well as setting UP IRSA
+that way, pods running ESO can access AWS secrets manager through our EKS oidc provider and 
+most particularly they can access our postgres password
+
+I updated my create.sh and destroy.sh script to add ESO installation using helm charts
+
+I still want to keep these script because My infra is very often destroyed and reapplyed
+and i dont really know if i can put everything in terraform (i already failed to do so earlier)
 

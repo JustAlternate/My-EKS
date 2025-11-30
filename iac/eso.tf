@@ -1,22 +1,12 @@
-module "eso_shared_secret_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
-  trusted_role_arns = []
-  create_role       = true
-  role_name         = "eso-shared-secret-assumable-role"
-  custom_role_policy_arns = [
-    aws_iam_policy.eso_shared.arn
-  ]
-  number_of_custom_role_policy_arns = 1
-  role_requires_mfa                 = false
-}
-
+# IAM for ESO
 resource "aws_iam_policy" "eso_shared" {
   name        = "eso-shared-secret-policy"
   description = "ESO ClusterSecretStore policy"
-  policy      = data.aws_iam_policy_document.eso_shared_secret_policy.json
+  policy      = data.aws_iam_policy_document.eso_policy.json
 }
 
-data "aws_iam_policy_document" "eso_shared_secret_policy" {
+# Policy to apply to ESO
+data "aws_iam_policy_document" "eso_policy" {
   statement {
     actions = [
       "secretsmanager:GetResourcePolicy",
@@ -29,18 +19,31 @@ data "aws_iam_policy_document" "eso_shared_secret_policy" {
   }
 }
 
-# Policy to apply to a secret to allow eso to read it
-data "aws_iam_policy_document" "eso" {
-  statement {
-    effect = "Allow"
-    principals {
-      type        = "AWS"
-      identifiers = [module.eso_shared_secret_role.iam_role_arn]
-    }
-    actions = [
-      "secretsmanager:GetSecretValue",
-      "secretsmanager:DescribeSecret",
+# IAM role for service account to access sercrets manager (IRSA)
+resource "aws_iam_role" "eso_service_account_role" {
+  name = "${var.cluster_name}-eso-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.eks_oidc.arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            # ESO’s default service account
+            "${replace(aws_eks_cluster.main.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:external-secrets:external-secrets"
+          }
+        }
+      }
     ]
-    resources = ["*"]
-  }
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "eso_policy_attach" {
+  role       = aws_iam_role.eso_service_account_role.name
+  policy_arn = aws_iam_policy.eso_shared.arn
 }
